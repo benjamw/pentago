@@ -322,10 +322,7 @@ class GamePlayer
 		}
 
 		array_trim($player_ids, 'int');
-
-		if ( ! $player_ids) {
-			throw new MyException(__METHOD__.': No player IDs given');
-		}
+		$player_ids[] = 0; // make sure we have at least one entry
 
 		if (isset($GLOBALS['_ROOT_ADMIN'])) {
 			$query = "
@@ -355,10 +352,7 @@ class GamePlayer
 		}
 
 		array_trim($player_ids, 'int');
-
-		if ( ! $player_ids) {
-			throw new MyException(__METHOD__.': No player IDs given');
-		}
+		$player_ids[] = 0; // make sure we have at least one entry
 
 		if (isset($GLOBALS['_ROOT_ADMIN'])) {
 			$query = "

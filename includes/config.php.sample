@@ -31,18 +31,18 @@
 	$game_prefix   = 'pa_'; // game table name prefix
 
 	// note this table does not have the same prefix as the other tables
-	define('T_PLAYER'      , $master_prefix . 'player'); // the player data table (NOTE: THERE IS NO GAME PREFIX)
+	define('T_PLAYER'       , $master_prefix . 'player'); // the player data table (NOTE: THERE IS NO GAME PREFIX)
 
-	define('T_CHAT'        , $master_prefix . $game_prefix . 'chat'); // the in-game chat/personal notes table
-	define('T_GAME'        , $master_prefix . $game_prefix . 'game'); // the game data table
-	define('T_GAME_HISTORY', $master_prefix . $game_prefix . 'game_history'); // the game log table
-	define('T_GAME_PLAYER' , $master_prefix . $game_prefix . 'game_player'); // the game player glue table
+	define('T_CHAT'         , $master_prefix . $game_prefix . 'chat'); // the in-game chat/personal notes table
+	define('T_GAME'         , $master_prefix . $game_prefix . 'game'); // the game data table
+	define('T_GAME_HISTORY' , $master_prefix . $game_prefix . 'game_history'); // the game move history table
+	define('T_GAME_PLAYER'  , $master_prefix . $game_prefix . 'game_player'); // the game player glue table
 	define('T_GAME_NUDGE'   , $master_prefix . $game_prefix . 'game_nudge'); // the game nudge table
-	define('T_MATCH'       , $master_prefix . $game_prefix . 'match'); // the match data table
-	define('T_MATCH_PLAYER', $master_prefix . $game_prefix . 'match_player'); // the match player glue table
-	define('T_MESSAGE'     , $master_prefix . $game_prefix . 'message'); // the message table
-	define('T_MSG_GLUE'    , $master_prefix . $game_prefix . 'message_glue'); // the player messaging glue table
-	define('T_SETTINGS'    , $master_prefix . $game_prefix . 'settings'); // the settings table
-	define('T_STATS'        , $master_prefix . $game_prefix . 'stats'); // the stats table
-	define('T_PENTAGO'     , $master_prefix . $game_prefix . 'pa_player'); // the pentago player data table
+	define('T_MATCH'        , $master_prefix . $game_prefix . 'match'); // the match data table
+	define('T_MATCH_PLAYER' , $master_prefix . $game_prefix . 'match_player'); // the match player glue table
+	define('T_MESSAGE'      , $master_prefix . $game_prefix . 'message'); // the message table
+	define('T_MSG_GLUE'     , $master_prefix . $game_prefix . 'message_glue'); // the player messaging glue table
+	define('T_SETTINGS'     , $master_prefix . $game_prefix . 'settings'); // the settings table
+	define('T_STATS'        , $master_prefix . $game_prefix . 'stats'); // the game stats table
+	define('T_PENTAGO'      , $master_prefix . $game_prefix . 'pa_player'); // the pentago player data table
 

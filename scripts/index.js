@@ -1,7 +1,7 @@
 
 // index javascript
 
-var reload = false; // do not change this
+var reload = true; // do not change this
 var refresh_timer = false;
 var refresh_timeout = 30001; // 30 seconds
 

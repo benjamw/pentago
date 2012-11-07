@@ -5,4 +5,4 @@
 define('GAME_NAME', 'Pentago');
 
 $GLOBALS['_VERSION'] = '2.0.&beta;';
-$GLOBALS['_UPDATED'] = '2012-08-24';
+$GLOBALS['_UPDATED'] = '2012-11-07';

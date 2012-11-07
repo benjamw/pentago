@@ -25,13 +25,13 @@ $meta['foot_data'] = '
 
 // grab the list of games
 $list = Game::get_list($_SESSION['player_id']);
-g($list);
 
 $contents = '';
 
 $table_meta = array(
 	'sortable' => true ,
 	'no_data' => '<p>There are no games to show</p>' ,
+	'caption' => 'Current Games' ,
 );
 $table_format = array(
 	array('SPECIAL_HTML', 'true', 'id="g[[[game_id]]]"') ,

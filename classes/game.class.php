@@ -84,6 +84,7 @@ class Game
 	static protected $_EXTRA_INFO_DEFAULTS = array(
 			'draw_offered' => false,
 			'undo_requested' => false,
+			'custom_rules' => '',
 		);
 
 
@@ -107,6 +108,15 @@ class Game
 	 * @var int
 	 */
 	public $id;
+
+
+	/** public property state
+	 *		Holds the game's current state
+	 *		can be one of 'Waiting', 'Playing', 'Finished', 'Draw'
+	 *
+	 * @var string (enum)
+	 */
+	public $state;
 
 
 	/** protected property name
@@ -766,10 +776,10 @@ class Game
 
 
 	/** public function is_player
-	 *		Tests if the given player is already in this game or not
+	 *		Tests if the given player is a player in the game
 	 *
 	 * @param int player id
-	 * @return bool is player in game
+	 * @return bool player is in game
 	 */
 	public function is_player($player_id)
 	{
@@ -787,7 +797,7 @@ class Game
 	 */
 	public function is_turn($player = true)
 	{
-		if ($this->has_winner( )) {
+		if ('Playing' != $this->state) {
 			return false;
 		}
 
@@ -1339,6 +1349,22 @@ exit;
 		));
 		call($black);
 		$this->_mysql->insert(self::GAME_STATS_TABLE, $black);
+	}
+
+
+	/** protected function _log
+	 *		Report messages to a file
+	 *
+	 * @param string message
+	 * @action log messages to file
+	 * @return void
+	 */
+	protected function _log($msg)
+	{
+		// log the error
+		if (false && class_exists('Log')) {
+			Log::write($msg, __CLASS__);
+		}
 	}
 
 
