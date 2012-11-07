@@ -1,0 +1,12 @@
+TODO
+------------------
+
+CURRENTLY WORKING ON: get game page html/css built
+
+- don't show success messages if email is not sent
+
+- figure out a nice way to create invites in the DB
+
+- make the invite page match the DB invites schema
+
+- fix the stats page

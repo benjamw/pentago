@@ -1,0 +1,135 @@
+
+// the pentago board specific stylings
+
+@import "compass/css3/border-radius";
+@import "compass/css3/box-shadow";
+@import "compass/css3/images";
+
+#board {
+	padding: 2px;
+	background: #eee;
+	@include border-radius(8px);
+	*zoom: 1;
+
+	&:before,
+	&:after {
+		content: "";
+		display: table;
+	}
+
+	&:after {
+		clear: both;
+	}
+
+	&.four {
+		width: 228px;
+		height: 228px;
+	}
+
+	&.nine {
+		width: 342px;
+		height: 342px;
+	}
+
+	div.block {
+		float: left;
+		width: 108px;
+		height: 108px;
+		margin: 3px;
+		background: #bbb;
+		@include border-radius(4px);
+		@include box-shadow(
+			0 1px 2px 1px rgba(0, 0, 0, 0.3),
+			0 1px 1px rgba(0, 0, 0, 0.5)
+		);
+
+/* the space */
+		div {
+			position: relative;
+			float: left;
+			width: 30px;
+			height: 30px;
+			padding: 3px;
+			@include border-radius(4px);
+
+/* the empty board space hole */
+			&:after {
+				content: "";
+				display: block;
+				width: 28px;
+				height: 28px;
+				position: absolute;
+				top: 4px;
+				left: 4px;
+				z-index: 1;
+				@include border-radius(9999px);
+				@include box-shadow(
+					inset 0 3px 5px -4px rgba(0, 0, 0, 0.9),
+					inset 0 3px 7px -2px rgba(0, 0, 0, 0.6),
+					inset 0 4px 13px -1px rgba(0, 0, 0, 0.2),
+					inset 0 -4px 13px -1px rgba(255, 255, 255, 0.3),
+					inset 0 3px 7px -2px rgba(255, 255, 255, 0.7),
+					inset 0 -3px 5px -4px rgba(255, 255, 255, 1)
+				);
+			}
+
+			&[class~="x"],
+			&[class~="o"],
+			&[class~="s"],
+			&[class~="z"] {
+/* the piece */
+				&:before {
+					content: "";
+					display: block;
+					width: 30px;
+					height: 30px;
+					position: absolute;
+					top: 3px;
+					left: 3px;
+					z-index: 2;
+					@include border-radius(9999px);
+					@include box-shadow(
+						inset 0 -5px 12px rgba(0, 0, 0, 0.4),
+						0 0 1px 1px rgba(0, 0, 0, 0.3)
+					);
+				}
+
+/* shine on the piece */
+				&:after {
+					width: 28px;
+					height: 21px;
+					position: absolute;
+					top: 3px;
+					left: 4px;
+					z-index: 5;
+					@include background-image(linear-gradient(top, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.2)));
+					@include box-shadow(inset 0 2px 1px rgba(255, 255, 255, 0.5));
+					@include border-top-radius(14px);
+					@include border-bottom-radius(13px 5px);
+				}
+			}
+
+/* the piece colors */
+			&.x:before { background-color: #c00; } // red
+			&.x.res:before { background-color: #f99; } // red resigned
+			&.o:before { background-color: #00c; } // blue
+			&.o.res:before { background-color: #99f; } // blue resigned
+			&.s:before { background-color: #cc0; } // yellow
+			&.s.res:before { background-color: #ff9; } // yellow resigned
+			&.z:before { background-color: #0c0; } // green
+			&.z.res:before { background-color: #9f9; } // green resigned
+
+			&.res:after { // remove the shine for resigned pieces
+				width: 0;
+				height: 0;
+			}
+
+/* empty space hover highlight */
+			&.h:after { background-color: rgba(255, 255, 255, 0.4); }
+
+		} // div (space)
+
+	} // div.block
+
+} // #board
+
