@@ -41,6 +41,7 @@ catch (MyException $e) {
 if ( ! $Game->is_player($_SESSION['player_id'])) {
 	$Game->watch_mode = true;
 	$chat_html = '';
+	unset($Chat);
 }
 
 if ( ! $Game->watch_mode || $GLOBALS['Player']->is_admin) {
@@ -212,15 +213,8 @@ echo get_header($meta);
 					<div id="blk_<?php echo $quad[$i]; ?>" class="block">
 
 					<?php
-						for ($j = 0; $j < $len; ++$j) {
-							$bits = array(
-								($j % 3), // across within block (across elems)
-								((int) floor($j / 3) * $divisor * 3), // down within block (down elems)
-								(($i % $divisor) * 3), // across blocks
-								((int) floor($i / $divisor) * $divisor * 3 * 3), // down blocks
-							);
-
-							$idx = array_sum($bits);
+						for ($j = 0; $j < 9; ++$j) {
+							$idx = get_index($i, $j, $divisor);
 							$piece = $board[$idx];
 
 							$class = '';

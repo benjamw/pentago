@@ -2,7 +2,6 @@
 var reload = true; // do not change this
 var refresh_timer = false;
 var refresh_timeout = 2001; // 2 seconds
-var old_board = false;
 
 
 // show the board
@@ -11,55 +10,6 @@ show_old_board(true);
 
 // set our move history active class and disabled review buttons
 update_history( );
-
-// invert board button
-$('a#invert').click( function( ) {
-	invert = ! invert;
-	show_old_board( );
-	show_new_board( );
-	clear_laser( );
-	return false;
-});
-
-// show full move button
-$('a#show_full').click( function( ) {
-	show_old_board(true);
-	return false;
-});
-
-// show move button
-$('a#show_move').click( function( ) {
-	show_old_board( );
-	blink_move( ); // calls show_new_board when done
-	return false;
-});
-
-// clear move button
-$('a#clear_move').click( function( ) {
-	show_new_board( );
-	return false;
-});
-
-// fire laser button
-$('a#fire_laser').click( function( ) {
-	if (false != timer) {
-		return false;
-	}
-
-	show_new_board( );
-
-	// show the hit piece
-	$('img.hit').show( ).fadeTo(50, 0.75);
-
-	fire_laser(game_history[move_index][2]);
-	return false;
-});
-
-// clear laser button
-$('a#clear_laser').click( function( ) {
-	clear_laser( );
-	return false;
-});
 
 // move history clicks
 $('#history table td[id^=mv_]').click( function( ) {
@@ -296,36 +246,6 @@ function show_new_board(cont) {
 }
 
 
-function clear_laser( ) {
-	if (old_board) {
-		show_new_board( );
-	}
-
-	clearTimeout(timer);
-	timer = false;
-	$('img.laser').remove( );
-	$('img.hit').hide( );
-}
-
-
-function do_full_move(idx) {
-	// stop any previous moves and/or animations
-	show_old_board( );
-	show_new_board( );
-	clear_laser( );
-
-	if (idx > (move_count - 1)) {
-		return false;
-	}
-
-	// set the global move index
-	move_index = parseInt(move_index) || (move_count - 1);
-
-	// and do the move
-	show_old_board(true);
-}
-
-
 function review( ) {
 	var type = $(this).attr('id');
 
@@ -382,7 +302,7 @@ function enable_moves( ) {
 	}
 
 	// make all our pieces clickable
-	$('div#board div.piece.p_'+color)
+	$('div#board div').not('.block')
 		.click(set_square)
 		.css('cursor', 'pointer');
 }

@@ -1,5 +1,10 @@
+/* the board styles ------------
+	pentago specific
 
-// the pentago board specific stylings
+	 do not edit these, if things need to be moved
+	 edit #board in game.scss, things will break horribly
+	 if these sizes are changed
+*/
 
 @import "compass/css3/border-radius";
 @import "compass/css3/box-shadow";
@@ -73,11 +78,14 @@
 				);
 			}
 
+/* empty space hover highlight */
+			&.h:after { background-color: rgba(255, 255, 255, 0.4); }
+
 			&[class~="x"],
 			&[class~="o"],
 			&[class~="s"],
 			&[class~="z"] {
-/* the piece */
+/* the piece (and bottom shadow) */
 				&:before {
 					content: "";
 					display: block;
@@ -96,16 +104,18 @@
 
 /* shine on the piece */
 				&:after {
+					content: "";
+					display: block;
 					width: 28px;
-					height: 21px;
+					height: 26px;
 					position: absolute;
 					top: 3px;
 					left: 4px;
 					z-index: 5;
-					@include background-image(linear-gradient(top, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.2)));
+					@include background-image(linear-gradient(top, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.1)));
 					@include box-shadow(inset 0 2px 1px rgba(255, 255, 255, 0.5));
 					@include border-top-radius(14px);
-					@include border-bottom-radius(13px 5px);
+					@include border-bottom-radius(13px 11px);
 				}
 			}
 
@@ -123,9 +133,6 @@
 				width: 0;
 				height: 0;
 			}
-
-/* empty space hover highlight */
-			&.h:after { background-color: rgba(255, 255, 255, 0.4); }
 
 		} // div (space)
 

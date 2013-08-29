@@ -667,7 +667,7 @@ return false;
 		call($player_ids);
 
 		if ($player_ids) {
-			Game::player_deleted($player_ids);
+			Match::player_deleted($player_ids);
 			$Mysql->delete(self::EXTEND_TABLE, " WHERE player_id IN (".implode(',', $player_ids).") ");
 		}
 	}

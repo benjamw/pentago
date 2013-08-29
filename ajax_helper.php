@@ -221,33 +221,7 @@ if (isset($_POST['turn'])) {
 	$return = array( );
 
 	try {
-		if (false !== strpos($_POST['to'], 'split')) { // splitting obelisk
-			$to = substr($_POST['to'], 0, 2);
-			call($to);
-
-			$from = Pharaoh::index_to_target($_POST['from']);
-			$to = Pharaoh::index_to_target($to);
-			call($from.'.'.$to);
-
-			$Game->do_move($from.'.'.$to);
-		}
-		elseif ((string) $_POST['to'] === (string) (int) $_POST['to']) { // moving
-			$to = $_POST['to'];
-			call($to);
-
-			$from = Pharaoh::index_to_target($_POST['from']);
-			$to = Pharaoh::index_to_target($to);
-			call($from.':'.$to);
-
-			$Game->do_move($from.':'.$to);
-		}
-		else { // rotating
-			$target = Pharaoh::index_to_target($_POST['from']);
-			$dir = (int) ('r' == strtolower($_POST['to']));
-			call($target.'-'.$dir);
-
-			$Game->do_move($target.'-'.$dir);
-		}
+// TODO: do the game action
 
 		$return['action'] = 'RELOAD';
 	}

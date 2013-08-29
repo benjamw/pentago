@@ -3,10 +3,31 @@ TODO
 
 CURRENTLY WORKING ON: get game page html/css built
 
-- don't show success messages if email is not sent
+- don't show success messages if email is not sent for things like
+	nudge, that are only email dependent
 
 - figure out a nice way to create invites in the DB
 
 - make the invite page match the DB invites schema
 
 - fix the stats page
+
+- build game reader for saved games
+
+- update scripts
+	- use yepnope and cdn
+
+- add showdown to messages (JS port of Markdown, in zz_scripts_js)
+
+- fully convert times to UTC in MySQL and back to user's timezone
+	everywhere dates are output
+
+- there are errors when trying to re-send invites
+	- make sure everything is working with the invites
+		- i didn't find any errors  =(
+		- it may be something to do with the resend button being shown
+			before it should be, or that the resend time checker is off
+			somehow.  it's basically failing due to being too new
+
+- make hover tooltips better
+

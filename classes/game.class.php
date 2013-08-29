@@ -810,6 +810,104 @@ class Game
 	}
 
 
+	/** public function nudge
+	 *		Nudges the given player to take their turn
+	 *
+	 * @param void
+	 * @return bool success
+	 */
+	public function nudge( )
+	{
+		call(__METHOD__);
+
+		if ($this->paused) {
+			throw new MyException(__METHOD__.': Trying to perform an action on a paused game');
+		}
+
+		if ( ! $this->test_nudge( )) {
+			throw new MyException(__METHOD__.': Trying to nudge a person who is not nudgable');
+		}
+
+		$sent = Email::send('nudge', $this->_players['opponent']['player_id'], array('opponent' => $this->_players['player']['object']->username, 'game_id' => $this->id));
+
+		if ( ! $sent) {
+			throw new MyException(__METHOD__.': Failed to send email');
+		}
+
+		$this->_mysql->delete(self::GAME_NUDGE_TABLE, " WHERE game_id = '{$this->id}' ");
+		$this->_mysql->insert(self::GAME_NUDGE_TABLE, array('game_id' => $this->id, 'player_id' => $this->_players['opponent']['player_id']));
+	}
+
+
+	/** public function test_nudge
+	 *		Tests if the current player can nudge or not
+	 *
+	 * @param void
+	 * @return bool player can be nudged
+	 */
+	public function test_nudge( )
+	{
+		call(__METHOD__);
+
+		$player_id = (int) $this->_pentago->current_player;
+
+		if ( ! $this->is_player($player_id) || $this->is_turn( ) || ('Playing' != $this->state) || $this->paused) {
+			return false;
+		}
+
+		if ( ! $this->_players[$player_id]['object']->allow_email || ('' == $this->_players[$player_id]['object']->email)) {
+			return false;
+		}
+
+		try {
+			$nudge_time = Settings::read('nudge_flood_control');
+		}
+		catch (MyException $e) {
+			return false;
+		}
+
+		if (-1 == $nudge_time) {
+			return false;
+		}
+		elseif (0 == $nudge_time) {
+			return true;
+		}
+
+		// check the nudge status for this game/player
+		// 'now' is taken from the DB because it may
+		// have a different time from the PHP server
+		$query = "
+			SELECT NOW( ) AS now
+				, G.modify_date AS move_date
+				, GN.nudged
+			FROM ".self::GAME_TABLE." AS G
+				LEFT JOIN ".self::GAME_NUDGE_TABLE." AS GN
+					ON (GN.game_id = G.game_id
+						AND GN.player_id = '{$player_id}')
+			WHERE G.game_id = '{$this->id}'
+				AND G.state = 'Playing'
+		";
+		$dates = $this->_mysql->fetch_assoc($query);
+
+		if ( ! $dates) {
+			return false;
+		}
+
+		// check the dates
+		// if the move date is far enough in the past
+		//  AND the player has not been nudged
+		//   OR the nudge date is far enough in the past
+		if ((strtotime($dates['move_date']) <= strtotime('-'.$nudge_time.' hour', strtotime($dates['now'])))
+			&& ((empty($dates['nudged']))
+				|| (strtotime($dates['nudged']) <= strtotime('-'.$nudge_time.' hour', strtotime($dates['now'])))))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+
 	/** public function get_players
 	 *		Returns the game players
 	 *
@@ -1171,7 +1269,7 @@ class Game
 			$moves[] = $history['move'];
 		}
 
-		$this->_pentago->do_moves($moves);
+		$this->winner = $this->_pentago->do_moves($moves);
 	}
 
 
@@ -1622,6 +1720,7 @@ exit;
 		}
 
 		$tables = array(
+			self::GAME_PLAYER_TABLE ,
 			self::GAME_HISTORY_TABLE ,
 			self::GAME_NUDGE_TABLE ,
 			self::GAME_TABLE ,
@@ -1679,36 +1778,22 @@ exit;
 			return false;
 		}
 
-		$Mysql = Mysql::get_instance( );
-
-		$query = "
-			SELECT *
-			FROM ".self::GAME_TABLE."
-			WHERE game_id = '{$game_id}'
-		";
-		$game = $Mysql->fetch_assoc($query);
-
-		if (empty($game)) {
+		try {
+			$Game = new Game($game_id);
+		}
+		catch (MyException $e) {
 			return false;
 		}
 
-		$query = "
-			SELECT P.player_id
-				, P.username
-				, GP.order_num
-			FROM ".self::GAME_PLAYER_TABLE." AS GP
-				JOIN ".Player::PLAYER_TABLE." AS P
-					ON (P.player_id = GP.player_id)
-			WHERE GP.game_id = '{$this->id}'
-			ORDER BY GP.order_num ASC
-		";
-		$players = $this->_mysql->fetch_array($query);
+		$players = $Game->get_players( );
+		call($players);
 
 		if (empty($players)) {
 			return false;
 		}
 
-		$logs = Pentago::get_logs($game_id, 'machine');
+		$logs = $Game->get_history(false);
+		call($logs);
 
 		if (empty($logs)) {
 			return false;

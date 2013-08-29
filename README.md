@@ -1,4 +1,4 @@
-Pentago v1.0
+Pentago v2.0
 ============
 
 NOT COMPLETE

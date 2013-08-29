@@ -1059,6 +1059,36 @@ class Match
 	}
 
 
+	/** static public function player_deleted
+	 *		Deletes the games the given players are in
+	 *
+	 * @param mixed array or csv of player ids
+	 * @action deletes the players games
+	 * @return void
+	 */
+	static public function player_deleted($ids)
+	{
+		$Mysql = Mysql::get_instance( );
+
+		array_trim($ids, 'int');
+
+		if (empty($ids)) {
+			throw new MyException(__METHOD__.': No player ids given');
+		}
+
+		$query = "
+			SELECT DISTINCT(game_id)
+			FROM ".self::MATCH_PLAYER_TABLE."
+			WHERE player_id IN (".implode(',', $ids).")
+		";
+		$game_ids = $Mysql->fetch_value_array($query);
+
+		if ($game_ids) {
+			self::delete($game_ids);
+		}
+	}
+
+
 	/** static public function pause
 	 *		Pauses the given matches
 	 *

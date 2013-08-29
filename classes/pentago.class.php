@@ -526,10 +526,7 @@ class Pentago
 	{
 		$size = count($this->board);
 
-		if ((9 == $size) && ! $this->center_rotates && ('D' == strtoupper($section[0]))) {
-			throw new MyException(__METHOD__.': Cannot rotate center block in 4 player game');
-		}
-		elseif ((4 == $size) && ! in_array(strtoupper($section[0]), array('A','B','C','D'))) {
+		if ((4 == $size) && ! in_array(strtoupper($section[0]), array('A','B','C','D'))) {
 			throw new MyException(__METHOD__.': Trying to rotate a block that does not exist');
 		}
 
@@ -624,7 +621,7 @@ class Pentago
 		$board_size = (int) count($this->board);
 		$test_start = (int) $board_size - 4;
 
-		$used = array('.', '0');
+		$blank = array('.', '0');
 
 		$moves_avail = false;
 
@@ -633,6 +630,8 @@ class Pentago
 		// for valid moves while checking for winners, do not optimize these loops
 		for ($y = 0; $y < $board_size; ++$y) {
 			for ($x = 0; $x < $board_size; ++$x) {
+				$chain = array( );
+
 				// get the color of the piece we are on
 				$piece = $this->board[$y][$x];
 
@@ -640,24 +639,34 @@ class Pentago
 				// (will set to true when one is found)
 				$moves_avail = ('.' == $piece) || $moves_avail;
 
-				// skip it if it's not a 'real' piece, or we found this winner already
-				if (in_array($piece, $used)) {
+				// skip it if it's not a 'real' piece
+				if (in_array($piece, $blank)) {
 					continue;
 				}
 
+				$chain[] = array($x, $y);
+
 				// test everything to the right
 				if ($x < $test_start) {
+					$cur_chain = $chain;
+
 					$count = 1; // we already counted the piece we started on
 					for ($xx = ($x + 1); $xx < $board_size; ++$xx) {
 						if ($piece != $this->board[$y][$xx]) {
 							break;
 						}
 
+						$cur_chain[] = array($xx, $y);
+
 						++$count;
 
-						if ((5 == $count) && ! in_array($piece, $winners)) {
-							$winners[] = $this->_color_player[$piece];
-							$used[] = $piece;
+						if (5 == $count) {
+							if (empty($winners[$this->_color_player[$piece]])) {
+								$winners[$this->_color_player[$piece]] = array( );
+							}
+
+							$winners[$this->_color_player[$piece]][] = $cur_chain;
+
 							break;
 						}
 					}
@@ -665,6 +674,8 @@ class Pentago
 
 				// test everything to the down & right
 				if (($x < $test_start) && ($y < $test_start)) {
+					$cur_chain = $chain;
+
 					$count = 1;
 					$xx = ($x + 1);
 					$yy = ($y + 1);
@@ -673,11 +684,17 @@ class Pentago
 							break;
 						}
 
+						$cur_chain[] = array($xx, $yy);
+
 						++$count;
 
-						if ((5 == $count) && ! in_array($piece, $winners)) {
-							$winners[] = $this->_color_player[$piece];
-							$used[] = $piece;
+						if (5 == $count) {
+							if (empty($winners[$this->_color_player[$piece]])) {
+								$winners[$this->_color_player[$piece]] = array( );
+							}
+
+							$winners[$this->_color_player[$piece]][] = $cur_chain;
+
 							break;
 						}
 
@@ -688,17 +705,25 @@ class Pentago
 
 				// test everything to the down
 				if ($y < $test_start) {
+					$cur_chain = $chain;
+
 					$count = 1;
 					for ($yy = ($y + 1); $yy < $board_size; ++$yy) {
 						if ($piece != $this->board[$yy][$x]) {
 							break;
 						}
 
+						$cur_chain[] = array($x, $yy);
+
 						++$count;
 
-						if ((5 == $count) && ! in_array($piece, $winners)) {
-							$winners[] = $this->_color_player[$piece];
-							$used[] = $piece;
+						if (5 == $count) {
+							if (empty($winners[$this->_color_player[$piece]])) {
+								$winners[$this->_color_player[$piece]] = array( );
+							}
+
+							$winners[$this->_color_player[$piece]][] = $cur_chain;
+
 							break;
 						}
 					}
@@ -706,6 +731,8 @@ class Pentago
 
 				// test everything to the down & left
 				if (($x >= ($board_size - $test_start)) && ($y < $test_start)) {
+					$cur_chain = $chain;
+
 					$count = 1;
 					$xx = ($x - 1);
 					$yy = ($y + 1);
@@ -714,11 +741,17 @@ class Pentago
 							break;
 						}
 
+						$cur_chain[] = array($xx, $yy);
+
 						++$count;
 
-						if ((5 == $count) && ! in_array($piece, $winners)) {
-							$winners[] = $this->_color_player[$piece];
-							$used[] = $piece;
+						if (5 == $count) {
+							if (empty($winners[$this->_color_player[$piece]])) {
+								$winners[$this->_color_player[$piece]] = array( );
+							}
+
+							$winners[$this->_color_player[$piece]][] = $cur_chain;
+
 							break;
 						}
 
@@ -729,17 +762,11 @@ class Pentago
 			}
 		}
 
-		$winners = array_unique($winners);
-
 		// if the game is over due to completion, with no winners yet...
 		// set the winners to all players currently playing (TIE)
 		if ( ! $moves_avail && ! $winners) {
-			foreach ($used as $piece) {
-				if ('.' == $piece) {
-					continue;
-				}
-
-				$winners[] = $this->_color_player[$piece];
+			foreach ($this->_color_player as $piece => $player) {
+				$winners[$player] = array( );
 			}
 		}
 
