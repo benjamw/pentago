@@ -229,7 +229,7 @@ class Pentago
 	}
 
 
-	/** protected function get_move
+	/** public function get_move
 	 *		Returns the latest move
 	 *
 	 * @param void
@@ -238,6 +238,17 @@ class Pentago
 	public function get_move( )
 	{
 		return $this->move;
+	}
+
+
+	/** public function get_current_player
+	 *		Returns the current player id
+	 *
+	 * @param void
+	 * @return int player id
+	 */
+	public function get_current_player( ) {
+		return (int) $this->current_player;
 	}
 
 
@@ -442,6 +453,8 @@ class Pentago
 		try {
 			$this->place_piece($matches[2].$matches[3], $matches[1]);
 			$this->rotate_section($matches[4], $matches[5]);
+
+			$this->move = $move;
 
 			$this->_next_player( );
 

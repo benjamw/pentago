@@ -1077,7 +1077,7 @@ class Match
 		}
 
 		$query = "
-			SELECT DISTINCT(game_id)
+			SELECT DISTINCT(match_id)
 			FROM ".self::MATCH_PLAYER_TABLE."
 			WHERE player_id IN (".implode(',', $ids).")
 		";

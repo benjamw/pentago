@@ -227,7 +227,14 @@ function packFEN($xFEN, $row_length = 9)
 	$xFEN = preg_replace('/\//', '', $xFEN); // remove any row separators
 
 	$xFEN = trim(chunk_split($xFEN, $row_length, '/'), '/'); // add the row separators
-	$FEN = preg_replace('/(0+)/e', "strlen('\\1')", $xFEN); // pack the 0s
+
+	// /e modifier got depricated in PHP 5.5.0
+	if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
+		$FEN = preg_replace_callback('/(0+)/', function($m) { return strlen($m[1]); }, $xFEN); // pack the 0s
+	}
+	else {
+		$FEN = preg_replace('/(0+)/e', "strlen('\\1')", $xFEN); // pack the 0s
+	}
 
 	return $FEN;
 }

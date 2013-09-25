@@ -91,13 +91,18 @@ foreach ($moves as $i => $move) {
 		break;
 	}
 
-	$id = ($i * 2) + 1;
+	$id = ($i * count($players)) + 1;
 
 	$history_html .= '
 						<tr>
 							<td class="turn">'.($i + 1).'</td>
 							<td id="mv_'.$id.'">'.$move[0].'</td>
-							<td'.( ! empty($move[1]) ? ' id="mv_'.($id + 1).'"' : '').'>'.$move[1].'</td>
+							<td'.( ! empty($move[1]) ? ' id="mv_'.($id + 1).'"' : '').'>'.$move[1].'</td>'.
+						((4 === count($players)) ? '
+							<td'.( ! empty($move[2]) ? ' id="mv_'.($id + 2).'"' : '').'>'.$move[2].'</td>
+							<td'.( ! empty($move[3]) ? ' id="mv_'.($id + 3).'"' : '').'>'.$move[3].'</td>'
+						: '')
+							.'
 						</tr>';
 }
 
@@ -123,23 +128,37 @@ if ( ! empty($Game->winner)) {
 	$turn = '<span class="'.$win_class.'">Game Over: '.$win_text.'</span>';
 }
 
+$board = $Game->get_board(null, true);
+
+$size = 'four';
+$divisor = 2;
+
+if (81 == strlen($board)) {
+	$size = 'nine';
+	$divisor = 3;
+}
+
 $meta['title'] = htmlentities($Game->name, ENT_QUOTES, 'ISO-8859-1', false).' - #'.$_SESSION['game_id'];
 $meta['show_menu'] = false;
 $meta['head_data'] = '
 	<link rel="stylesheet" type="text/css" media="screen" href="css/game.css" />
 
-	<script type="text/javascript" src="scripts/board.js"></script>
-	<script type="text/javascript">/*<![CDATA[*/
-		var draw_offered = '.json_encode($Game->draw_offered($_SESSION['player_id'])).';
-		var undo_requested = '.json_encode($Game->undo_requested($_SESSION['player_id'])).';
-		var color = "'.(isset($players[$_SESSION['player_id']]) ? $players[$_SESSION['player_id']]['color'] : '').'";
-		var state = "'.(( ! $Game->watch_mode) ? (( ! $Game->paused) ? (is_null($Game->winner) ? 'playing' : 'finished') : 'paused') : 'watching').'";
-		var last_move = '.$Game->last_move.';
-		var my_turn = '.($Game->get_players_turn($_SESSION['player_id']) ? 'true' : 'false').';
-		var game_history = '.$Game->get_history(true).';
-		var move_count = game_history.length;
-		var move_index = (move_count - 1);
-	/*]]>*/</script>
+	<script type="text/javascript">
+		var GAME = {
+				draw_offered: '.json_encode($Game->draw_offered($_SESSION['player_id'])).',
+				undo_requested: '.json_encode($Game->undo_requested($_SESSION['player_id'])).',
+				color: "'.(isset($players[$_SESSION['player_id']]) ? $players[$_SESSION['player_id']]['color'] : '').'",
+				code: "'.(isset($players[$_SESSION['player_id']]) ? $players[$_SESSION['player_id']]['code'] : '').'",
+				state: "'.(( ! $Game->watch_mode) ? (( ! $Game->paused) ? (empty($Game->winner) ? 'playing' : 'finished') : 'paused') : 'watching').'",
+				last_move: '.$Game->last_move.',
+				my_turn: '.($Game->get_players_turn($_SESSION['player_id']) ? 'true' : 'false').',
+				game_history: '.$Game->get_history(true).',
+				divisor: '.$divisor.'
+			};
+
+		GAME.move_count = GAME.game_history.length;
+		GAME.move_index = (GAME.move_count - 1);
+	</script>
 ';
 
 $meta['foot_data'] = '
@@ -158,26 +177,6 @@ echo get_header($meta);
 			<h2>Game #<?php echo $_SESSION['game_id'].': '.htmlentities($Game->name, ENT_QUOTES, 'ISO-8859-1', false); ?>
 				<span class="turn"><?php echo $turn; ?></span>
 			</h2>
-
-		<?php
-
-			$board = $Game->get_board(null, true);
-
-			$nine = false;
-			$size = 'four';
-			$quad = array('A','B','C','D');
-			$divisor = 2;
-
-			if (81 == strlen($board)) {
-				$nine = true;
-				$size = 'nine';
-				$quad = array('A','B','E','C','D','F','G','H','I');
-				$divisor = 3;
-			}
-
-			$image = 'image/'.$size.'/';
-
-		?>
 
 			<div id="history" class="box">
 				<div>
@@ -206,37 +205,9 @@ echo get_header($meta);
 			</div> <!-- #history -->
 
 			<div id="board_wrapper">
-				<div id="board" class="<?php echo $size; ?>">
-
-				<?php for ($i = 0, $len = pow($divisor, 2); $i < $len; ++$i) { ?>
-
-					<div id="blk_<?php echo $quad[$i]; ?>" class="block">
-
-					<?php
-						for ($j = 0; $j < 9; ++$j) {
-							$idx = get_index($i, $j, $divisor);
-							$piece = $board[$idx];
-
-							$class = '';
-							if ('0' !== $piece) {
-								$class = ' class="'.$piece.'"';
-							}
-
-							?>
-
-						<div<?php echo $class; ?>></div>
-
-							<?php
-						}
-					?>
-
-					</div>
-
-				<?php } ?>
-
-				</div> <!-- #board -->
+				<div id="board" class="<?php echo $size; ?>"></div> <!-- #board -->
 				<div class="buttons">
-					<a href="javascript:;" id="remove_piece">Remove Piece</a>
+					<a href="javascript:;" id="remove_piece" style="display:none;">Remove Piece</a>
 				</div> <!-- .buttons -->
 
 				<form id="game" method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>"><div class="formdiv">

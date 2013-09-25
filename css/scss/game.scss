@@ -3,7 +3,7 @@
 */
 
 
-@import "board";
+@import "_board";
 
 
 #contents {
@@ -11,7 +11,7 @@
 }
 
 #chatbox {
-	margin-left: 755px;
+	margin-left: 545px;
 }
 
 #chats {
@@ -32,12 +32,11 @@
 
 #board_wrapper {
 	float: left;
-	width: 550px;
+	width: 370px;
 	margin-left: 5px;
 }
 
 #board {
-	float: left;
 	margin: 5px 10px;
 }
 
@@ -45,9 +44,12 @@
 	float: left;
 
 	table {
+		max-width: 260px;
 		margin: 0;
 
 		td {
+			width: 50px;
+			text-align: center;
 			padding: 0 5px;
 			font-size: 1.1em;
 			line-height: 130%;

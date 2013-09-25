@@ -453,6 +453,84 @@ class Game
 	}
 
 
+	/** public function do_move
+	 *		Do the given move and send out emails
+	 *
+	 * @param string move code
+	 * @action performs the move
+	 * @return array indexes hit
+	 */
+	public function do_move($move)
+	{
+		call(__METHOD__);
+
+		try {
+			$outcome = $this->_pentago->do_move($move);
+		}
+		catch (MyException $e) {
+			throw $e;
+		}
+
+		$current_player = $this->_pentago->get_current_player( );
+
+		if ($outcome) {
+			$winners = array_keys($outcome);
+			$this->winner = implode(', ', $winners);
+			$this->_extra_info['winners'] = $outcome;
+
+			foreach ($winners as $winner) {
+// TODO: store the match score when saving the game
+// also pull the match score into the player data when pulling the players
+				$this->_players[$winner]['score'] += (1 / count($outcome));
+			}
+
+			foreach ($this->_players as $player) {
+				if (in_array($player['player_id'], $winners)) {
+					if (1 === count($winners)) {
+						$player['object']->add_win( );
+						Email::send('won', $this->_players['player_id'], array('opponent' => $this->name));
+					}
+					else {
+						$player['object']->add_draw( );
+						Email::send('draw', $this->_players['player_id'], array('opponent' => $this->name));
+					}
+				}
+				else {
+					$player['object']->add_loss( );
+					Email::send('defeated', $this->_players['player_id'], array('opponent' => $this->_players[$current_player]['object']->username));
+				}
+			}
+		}
+		else {
+			$next = false;
+			foreach ($this->_players as $player_id => $player) {
+				if ($next) {
+					// $player_id is the ID needed
+					$next = false;
+					break;
+				}
+
+				if ($current_player === $player_id) {
+					$next = true;
+				}
+			}
+
+			// if we get here, the turns have started over
+			if ($next) {
+				reset($this->_players);
+				list($player_id, ) = each($this->_players);
+			}
+
+			// send the email
+			Email::send('turn', $player_id, array('opponent' => $this->name, 'game_id' => $this->id));
+		}
+
+		$this->save( );
+
+		return $outcome;
+	}
+
+
 	/** public function resign
 	 *		Resigns the given player from the game
 	 *
@@ -880,12 +958,16 @@ class Game
 			SELECT NOW( ) AS now
 				, G.modify_date AS move_date
 				, GN.nudged
+				, COUNT(GH.game_id) AS history
 			FROM ".self::GAME_TABLE." AS G
 				LEFT JOIN ".self::GAME_NUDGE_TABLE." AS GN
 					ON (GN.game_id = G.game_id
 						AND GN.player_id = '{$player_id}')
+				LEFT JOIN ".self::GAME_HISTORY_TABLE." AS GH
+					ON (GH.game_id = G.game_id)
 			WHERE G.game_id = '{$this->id}'
-				AND G.state = 'Playing'
+			GROUP BY G.game_id
+			HAVING 0 <> history
 		";
 		$dates = $this->_mysql->fetch_assoc($query);
 
@@ -1002,81 +1084,14 @@ class Game
 		}
 
 		$history = array( );
-		foreach ($this->history as $i => $node) {
-			$move = $this->get_move($i);
-			if ($move) {
-				$move = array_unique(array_values($move));
-			}
-
+		foreach (array_reverse($this->history) as $i => $node) {
 			$history[] = array(
 				expandFEN($node['board']),
-				$move,
+				$node['move'],
 			);
 		}
 
 		return json_encode($history);
-	}
-
-
-	/** public function get_move
-	 *		Returns the data for the given move index
-	 *
-	 * @param int optional move history index
-	 * @param bool optional return as JSON string
-	 * @return array or string previous turn
-	 */
-	public function get_move($index = null, $json = false)
-	{
-		call(__METHOD__);
-		call($index);
-		call($json);
-
-		if (is_null($index)) {
-			$index = count($this->history) - 1;
-		}
-
-		$index = (int) $index;
-		$json = (bool) $json;
-
-		$turn = $this->history[$index];
-		$board = expandFEN($turn['board']);
-		if ( ! empty($this->history[$index - 1])) {
-			$board = expandFEN($this->history[$index - 1]['board']);
-		}
-
-		if ( ! $turn['move']) {
-			if ($json) {
-				return 'false';
-			}
-
-			return false;
-		}
-
-		$move = array( );
-
-		$move[0] = Pharaoh::target_to_index(substr($turn['move'], 0, 2));
-
-		if ('-' == $turn['move'][2]) {
-			$move[1] = $move[0][0];
-			$move[2] = $turn['move'][3];
-		}
-		else {
-			$move[1] = Pharaoh::target_to_index(substr($turn['move'], 3, 2));
-			$move[2] = (int) (':' == $turn['move'][2]);
-		}
-
-		$move[3] = Pharaoh::get_piece_color($board[$move[0]]);
-
-		if ($json) {
-			return json_encode($move);
-		}
-
-		$move['from'] = $move[0];
-		$move['to'] = $move[1];
-		$move['extra'] = $move[2];
-		$move['color'] = $move[3];
-
-		return $move;
 	}
 
 
@@ -1090,7 +1105,7 @@ class Game
 	{
 		call(__METHOD__);
 
-		$history = $this->history;
+		$history = array_reverse($this->history);
 		array_shift($history); // remove the empty first move
 
 		$return = array( );
@@ -1098,7 +1113,7 @@ class Game
 			$return[floor($i / $this->capacity)][$i % $this->capacity] = $ply['move'];
 		}
 
-		if (isset($i) && (0 == ($i % $this->capacity))) {
+		while (isset($i) && (($this->capacity - 1) !== ($i % $this->capacity))) {
 			++$i;
 			$return[floor($i / $this->capacity)][$i % $this->capacity] = '';
 		}
@@ -1134,6 +1149,7 @@ class Game
 		}
 
 		$this->create_date = strtotime($result['create_date']);
+		$this->modify_date = strtotime($result['modify_date']);
 		$this->paused = (bool) $result['paused'];
 		$this->winner = array_trim($result['winner'], 'int');
 
@@ -1145,6 +1161,23 @@ class Game
 		}
 		catch (MyException $e) {
 			throw $e;
+		}
+
+		if (empty($this->winner)) {
+			if (empty($this->paused)) {
+				if ( ! empty($this->history)) {
+					$this->state = 'Playing';
+				}
+				else {
+					$this->state = 'Waiting';
+				}
+			}
+			else {
+				$this->state = 'Paused';
+			}
+		}
+		else {
+			$this->state = 'Finished';
 		}
 
 		$this->_update_pentago( );
@@ -1258,18 +1291,11 @@ class Game
 			$this->_pentago->current_player = ((count($this->history) - 1) % $this->capacity) + 1;
 		}
 
-		// set up the board
-		$moves = array( );
-		foreach ($this->history as $history) {
-			// skip the first move entry
-			if (is_null($history['move'])) {
-				continue;
-			}
+		call($this->history);
 
-			$moves[] = $history['move'];
-		}
+		$this->_pentago->set_board($this->history[0]['board']);
 
-		$this->winner = $this->_pentago->do_moves($moves);
+		$this->winner = $this->_pentago->get_outcome( );
 	}
 
 
@@ -1288,6 +1314,7 @@ class Game
 		$query = "
 			SELECT winner
 				, modify_date
+				, extra_info
 			FROM ".self::GAME_TABLE."
 			WHERE game_id = '{$this->id}'
 		";
@@ -1334,6 +1361,8 @@ class Game
 			$update_game['extra_info'] = null;
 		}
 
+		call($game['extra_info']);
+		call($update_game['extra_info']);
 		if (0 === strcmp($game['extra_info'], $update_game['extra_info'])) {
 			unset($update_game['extra_info']);
 		}
@@ -1342,11 +1371,6 @@ class Game
 			$update_modified = true;
 			$this->_mysql->insert(self::GAME_TABLE, $update_game, " WHERE game_id = '{$this->id}' ");
 		}
-
-		// update the board
-		$color = $this->_players['player']['color'];
-		call($color);
-		call('IN-GAME SAVE');
 
 		// grab the current board from the database
 		$query = "
@@ -1532,7 +1556,7 @@ exit;
 			";
 			$game_ids = $Mysql->fetch_value_array($query);
 
-			$game_ids[] = 0; // don't break the ON clause
+			$game_ids[] = 0; // don't break the IN clause
 			$WHERE = " WHERE G.game_id IN (".implode(',', $game_ids).") ";
 		}
 
@@ -1595,7 +1619,7 @@ exit;
 
 				// calculate the current player based on how many moves are in the history table
 				// and how many players are in the game
-				$turn_idx = ($game['moves'] % count($players)) + 1;
+				$turn_idx = ($game['moves'] % count($players));
 
 				$game['turn'] = $players[$turn_idx]['username'];
 
@@ -1713,10 +1737,7 @@ exit;
 		$ids[] = 0; // don't break the IN clause
 
 		foreach ($ids as $id) {
-			try {
-				self::write_game_file($id);
-			}
-			catch (MyException $e) { }
+			self::write_game_file($id);
 		}
 
 		$tables = array(

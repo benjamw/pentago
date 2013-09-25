@@ -37,6 +37,7 @@
 	}
 
 	div.block {
+		position: relative;
 		float: left;
 		width: 108px;
 		height: 108px;
@@ -47,6 +48,37 @@
 			0 1px 2px 1px rgba(0, 0, 0, 0.3),
 			0 1px 1px rgba(0, 0, 0, 0.5)
 		);
+
+/* the rotate arrows */
+		div.rotate {
+			position: absolute;
+			top: 0;
+			left: 0;
+			z-index: 20;
+			width: 54px;
+			height: 108px;
+			padding: 0;
+			background: transparent url(../images/rotate_cw.png) center center no-repeat;
+			opacity: 0;
+
+			&:before {
+				display: none;
+			}
+
+			&:after {
+				display: none;
+			}
+
+			&.rotate_left {
+				left: 54px;
+				background-image: url(../images/rotate_ccw.png);
+			}
+
+			&:hover,
+			&.h {
+				opacity: 0.4;
+			}
+		}
 
 /* the space */
 		div {
@@ -79,6 +111,7 @@
 			}
 
 /* empty space hover highlight */
+			&:hover:after,
 			&.h:after { background-color: rgba(255, 255, 255, 0.4); }
 
 			&[class~="x"],
@@ -112,7 +145,8 @@
 					top: 3px;
 					left: 4px;
 					z-index: 5;
-					@include background-image(linear-gradient(top, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.1)));
+					background-color: transparent; /* to counteract the .h class */
+					@include background-image(linear-gradient(top, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.1)), linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 60%, rgba(0, 0, 0, 0.12) 61%, rgba(0, 0, 0, 0.04)));
 					@include box-shadow(inset 0 2px 1px rgba(255, 255, 255, 0.5));
 					@include border-top-radius(14px);
 					@include border-bottom-radius(13px 11px);

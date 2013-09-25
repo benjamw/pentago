@@ -221,7 +221,7 @@ if (isset($_POST['turn'])) {
 	$return = array( );
 
 	try {
-// TODO: do the game action
+		$Game->do_move($_POST['move']);
 
 		$return['action'] = 'RELOAD';
 	}

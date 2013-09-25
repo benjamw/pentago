@@ -1,8 +1,18 @@
 TODO
 ------------------
 
-CURRENTLY WORKING ON: get game page html/css built
+CURRENTLY WORKING ON:
+-get game page html/css built
+-get game page working with clicks and reviewing and all that
+-make sure that the player names in the game name are ordered properly
+	and that the names shown on the game page are colored with the
+	players color.
+-it might be nice to color the review table headers as well
+-remove resign until i get that figured out
+	(maybe allow for 2 player games)
 
+
+=================================================
 - don't show success messages if email is not sent for things like
 	nudge, that are only email dependent
 
