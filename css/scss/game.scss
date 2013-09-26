@@ -11,11 +11,21 @@
 }
 
 #chatbox {
-	margin-left: 545px;
+	margin-left: 650px;
 }
 
 #chats {
 	height: 450px;
+
+	.private {
+		background: #111;
+		color: #999;
+
+		&:before {
+			content: "PRIVATE: ";
+			font-weight: bold;
+		}
+	}
 }
 
 #game_page {
@@ -98,4 +108,9 @@ form#game {
 	text-align: center;
 	padding-top: 20px;
 }
+
+.red { color: #f66; }
+.blu { color: #66f; }
+.yel { color: #ff6; }
+.gre { color: #6f6; }
 

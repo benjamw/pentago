@@ -114,13 +114,20 @@ elseif ($Game->undo_requested( )) {
 	$turn = '<span>Undo Requested</span>';
 }
 elseif ($GLOBALS['Player']->username == $turn) {
-	$turn = '<span class="player">Your turn</span>';
+	$turn = '<span class="player '.substr($players[$_SESSION['player_id']]['color'], 0, 3).'">Your turn</span>';
 }
 elseif ( ! $turn) {
 	$turn = '';
 }
 else {
-	$turn = '<span class="opponent">'.$turn.'\'s turn</span>';
+	foreach ($players as $player) {
+		if ( ! empty($player['turn']) || ($turn === $player['object']->username)) {
+			$color = substr($player['color'], 0, 3);
+			break;
+		}
+	}
+
+	$turn = '<span class="opponent '.$color.'">'.$turn.'\'s turn</span>';
 }
 
 if ( ! empty($Game->winner)) {
@@ -167,6 +174,13 @@ $meta['foot_data'] = '
 
 echo get_header($meta);
 
+$game_name = array( );
+foreach ($players as $player) {
+	$game_name[] = '<span class="name '.substr($player['color'], 0, 3).'">'.htmlentities($player['object']->username, ENT_QUOTES, 'ISO-8859-1', false).'</span>';
+}
+
+$game_name = implode(', ', $game_name);
+
 ?>
 
 		<div id="contents">
@@ -174,7 +188,7 @@ echo get_header($meta);
 				<li><a href="index.php<?php echo $GLOBALS['_?_DEBUG_QUERY']; ?>">Main Page</a></li>
 				<li><a href="game.php<?php echo $GLOBALS['_?_DEBUG_QUERY']; ?>">Reload Game Board</a></li>
 			</ul>
-			<h2>Game #<?php echo $_SESSION['game_id'].': '.htmlentities($Game->name, ENT_QUOTES, 'ISO-8859-1', false); ?>
+			<h2>Game #<?php echo $_SESSION['game_id'].': '.$game_name; ?>
 				<span class="turn"><?php echo $turn; ?></span>
 			</h2>
 
@@ -193,7 +207,7 @@ echo get_header($meta);
 							<tr>
 								<th>#</th>
 							<?php foreach ($players as $player) { ?>
-								<th><?php echo ucfirst(substr($player['color'], 0, 3)); ?></th>
+								<th class="<?php echo substr($player['color'], 0, 3); ?>" title="<?php echo htmlentities($player['object']->username, ENT_QUOTES, 'ISO-8859-1', false); ?>"><?php echo ucfirst(substr($player['color'], 0, 3)); ?></th>
 							<?php } ?>
 							</tr>
 						</thead>
