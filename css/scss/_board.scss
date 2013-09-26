@@ -74,7 +74,6 @@
 				background-image: url(../images/rotate_ccw.png);
 			}
 
-			&:hover,
 			&.h {
 				opacity: 0.4;
 			}
@@ -111,7 +110,6 @@
 			}
 
 /* empty space hover highlight */
-			&:hover:after,
 			&.h:after { background-color: rgba(255, 255, 255, 0.4); }
 
 			&[class~="x"],
