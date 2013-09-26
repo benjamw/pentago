@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS `pa_game_history` (
   `move` char(6) COLLATE latin1_general_ci DEFAULT NULL,
   `board` varchar(81) COLLATE latin1_general_ci NOT NULL,
   `move_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `game_id_2` (`game_id`,`move_date`),
   KEY `game_id` (`game_id`),
   KEY `move_date` (`move_date`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci;
@@ -110,8 +111,7 @@ CREATE TABLE IF NOT EXISTS `pa_match` (
   `capacity` tinyint(1) unsigned NOT NULL DEFAULT '2',
   `large_board` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `paused` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `create_date` datetime NOT NULL,
-  `modify_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
+  `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`match_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_general_ci AUTO_INCREMENT=1 ;
 
@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS `pa_match` (
 
 CREATE TABLE IF NOT EXISTS `pa_match_player` (
   `match_id` int(11) unsigned NOT NULL,
-  `player_id` int(11) unsigned NULL DEFAULT NULL,
+  `player_id` int(11) unsigned DEFAULT NULL,
   `host` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `score` decimal(4,2) DEFAULT NULL,
   UNIQUE KEY `match_player` (`match_id`,`player_id`),
