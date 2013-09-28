@@ -35,7 +35,7 @@ console.log('REFRESH TIMER - REFRESHING');
 			// no debug redirect, just do it
 
 			// only run this if the previous ajax call has completed
-			if (false == jqXHR) {
+			if (false === jqXHR) {
 				jqXHR = $.ajax({
 					type: 'POST',
 					url: 'ajax_helper.php',
@@ -55,7 +55,7 @@ console.log('REFRESH TIMER - REFRESHING');
 			// successively increase the timeout time in case someone
 			// leaves their window open, don't poll the server every
 			// two seconds for the rest of time
-			if (0 == (timeout % 5)) {
+			if (0 === (timeout % 5)) {
 				timeout += Math.floor(timeout * 0.001) * 1000;
 			}
 
