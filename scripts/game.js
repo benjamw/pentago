@@ -184,6 +184,8 @@ console.log('REFRESH TIMER - '+ timeout);
 			// show the "remove piece" link
 			$('#remove_piece').show( ).on('click', function( ) {
 				$move.val('');
+				$('.rotate').hide( );
+				$('#remove_piece').hide( ).off('click');
 				$this.removeClass(GAME.code.toLowerCase( ));
 				time = [ ];
 			});
@@ -209,6 +211,11 @@ console.log('REFRESH TIMER - '+ timeout);
 				window.location = 'ajax_helper.php'+debug_query+'&'+$('form#game').serialize( )+'&turn=1';
 				return false;
 			}
+
+			// hide various bits that were shown after the piece was clicked
+			$('.rotate').hide( );
+			$('#remove_piece').hide( );
+			$('div#board .block div').not('.x, .o, .s, .z').off('mouseenter');
 
 			// ajax the form
 			$.ajax({
