@@ -368,7 +368,7 @@ console.log(xFEN);
 	function show_board( ) {
 		GAME.move_index = parseInt(GAME.move_index, 10) || (GAME.move_count - 1);
 
-		$('div#board').empty( ).append(create_board(GAME.game_history[GAME.move_index][0]));
+		$('div#board').empty( ).append(create_board(GAME.game_history[GAME.move_index][0], ((GAME.move_index === (GAME.move_count - 1)) ? GAME.winner : { })));
 
 		enable_moves( );
 
