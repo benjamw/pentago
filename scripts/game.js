@@ -275,7 +275,7 @@ console.log('REFRESH TIMER - '+ timeout);
 	}
 
 
-	function create_board(xFEN) {
+	function create_board(xFEN, winner) {
 console.log(xFEN);
 		if ( ! xFEN) {
 			return false;
@@ -283,13 +283,36 @@ console.log(xFEN);
 
 		var i,
 			j,
+			k,
 			len,
 			idx,
 			quads = [['A', 'B', 'C', 'D'], ['A','B','E','C','D','F','G','H','I']],
 			quad = quads[((2 === GAME.divisor) ? 0 : 1)],
 			piece,
-			klass = '',
-			html = '';
+			type = [],
+			html = '',
+			new_winner = { };
+
+		// flip the winner array inside out and around
+		for (i in winner) {
+			if (winner.hasOwnProperty(i)) {
+				for (j = 0, len = winner[i].length; j < len; j += 1) {
+					for (k = 0; k < 5; k += 1) {
+						if ('undefined' === typeof new_winner[winner[i][j][k][0]]) {
+							new_winner[winner[i][j][k][0]] = { };
+						}
+
+						if ('undefined' === typeof new_winner[winner[i][j][k][0]][winner[i][j][k][1]]) {
+							new_winner[winner[i][j][k][0]][winner[i][j][k][1]] = [ ];
+						}
+
+						new_winner[winner[i][j][k][0]][winner[i][j][k][1]].push(i);
+					}
+				}
+			}
+		}
+
+		winner = new_winner;
 
 		for (i = 0, len = Math.pow(GAME.divisor, 2); i < len; ++i) {
 			html += '<div id="blk_'+ quad[i] +'" class="block">';
@@ -298,12 +321,16 @@ console.log(xFEN);
 				idx = get_index(i, j, GAME.divisor);
 				piece = xFEN.charAt(idx);
 
-				klass = '';
-				if ('0' !== piece) {
-					klass = ' class="'+ piece.toLowerCase( ) +'"';
+				type = [];
+				if ('.' !== piece) {
+					type.push(piece.toLowerCase( ));
 				}
 
-				html += '<div'+ klass +' id="s_'+ quad[i] + String.fromCharCode(65 + j) +'"></div>';
+				if (('undefined' !== typeof winner[Math.floor(idx % (3 * GAME.divisor))]) && ('undefined' !== typeof winner[Math.floor(idx % (3 * GAME.divisor))][Math.floor(idx / (3 * GAME.divisor))])) {
+					type.push('winner');
+				}
+
+				html += '<div'+ ((0 !== type.length) ? ' class="'+ type.join(' ') +'"' : '') +' id="s_'+ quad[i] + String.fromCharCode(65 + j) +'"></div>';
 			}
 
 			html += '<div class="rotate rotate_right" id="r_'+ quad[i] +'R" style="display:none;cursor:pointer;"></div>';

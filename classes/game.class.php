@@ -168,7 +168,7 @@ class Game
 
 
 	/** protected property history
-	 *		Holds our game move history
+	 *		Holds the game move history
 	 *
 	 * @var array
 	 */
@@ -176,7 +176,7 @@ class Game
 
 
 	/** protected property winner
-	 *		Holds our game winners
+	 *		Holds the game winner
 	 *
 	 * @var array
 	 */
@@ -184,7 +184,7 @@ class Game
 
 
 	/** protected property watch_mode
-	 *		Lets us know if we are just visiting this game
+	 *		Visiting flag
 	 *
 	 * @var bool
 	 */
@@ -200,7 +200,7 @@ class Game
 
 
 	/** protected property _players
-	 *		Holds our player's object references
+	 *		Holds the player's object references
 	 *		along with other game data
 	 *
 	 * @var array
@@ -268,34 +268,6 @@ class Game
 			throw $e;
 		}
 	}
-
-
-	/** public function __destruct
-	 *		Class destructor
-	 *		Gets object ready for destruction
-	 *
-	 * @param void
-	 * @action saves changed data
-	 * @action destroys object
-	 * @return void
-	 */
-/*
-	public function __destruct( )
-	{
-		// save anything changed to the database
-		// BUT... only if PHP didn't die because of an error
-		$error = error_get_last( );
-
-		if ($this->id && (0 == ((E_ERROR | E_WARNING | E_PARSE) & $error['type']))) {
-			try {
-				$this->save( );
-			}
-			catch (MyException $e) {
-				// do nothing, it will be logged
-			}
-		}
-	}
-*/
 
 
 	/** public function __get
@@ -438,7 +410,7 @@ class Game
 		}
 
 		// create an entry in the history table
-		$board = str_repeat('0', (((2 < count($players)) || (bool) $match['large_board']) ? '81' : '36'));
+		$board = str_repeat('.', (((2 < count($players)) || (bool) $match['large_board']) ? '81' : '36'));
 
 		$data = array( );
 		$data['game_id'] = $game_id;

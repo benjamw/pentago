@@ -202,13 +202,13 @@ function expandFEN($FEN)
 {
 	$FEN = preg_replace('/\s+/', '', $FEN); // remove spaces
 
-	$FEN = preg_replace_callback('/\d+/', 'replace_callback', $FEN); // unpack the 0s
+	$FEN = preg_replace_callback('/\d+/', 'replace_callback', $FEN); // unpack the .s
 	$xFEN = str_replace('/', '', $FEN); // remove the row separators
 
 	return $xFEN;
 }
 function replace_callback($match) {
-	return (((int) $match[0]) ? str_repeat('0', (int) $match[0]) : $match[0]);
+	return (((int) $match[0]) ? str_repeat('.', (int) $match[0]) : $match[0]);
 }
 
 
@@ -230,10 +230,10 @@ function packFEN($xFEN, $row_length = 9)
 
 	// /e modifier got depricated in PHP 5.5.0
 	if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
-		$FEN = preg_replace_callback('/(0+)/', function($m) { return strlen($m[1]); }, $xFEN); // pack the 0s
+		$FEN = preg_replace_callback('/(\.+)/', function($m) { return strlen($m[1]); }, $xFEN); // pack the .s
 	}
 	else {
-		$FEN = preg_replace('/(0+)/e', "strlen('\\1')", $xFEN); // pack the 0s
+		$FEN = preg_replace('/(\.+)/e', "strlen('\\1')", $xFEN); // pack the .s
 	}
 
 	return $FEN;

@@ -223,7 +223,7 @@ class Pentago
 		}
 		unset($row); // kill the reference
 
-		$board = str_replace('.', '0', implode('', $board));
+		$board = implode('', $board);
 
 		return $board;
 	}
@@ -318,7 +318,7 @@ class Pentago
 
 			$this->board = array( );
 			for ($i = 0; $i < $length; ++$i) {
-				$this->board[(int) floor($i / $size)][$i % $size] = (('0' === $FEN{$i}) ? '.' : $FEN{$i});
+				$this->board[(int) floor($i / $size)][$i % $size] = $FEN{$i};
 			}
 
 			if (empty($this->current_player)) {
@@ -332,8 +332,8 @@ class Pentago
 				$FEN .= implode('', $row);
 			}
 
-			// anything not in $COLORS, replace with 0
-			$FEN = preg_replace('%[^'.implode('', self::$COLORS).']%i', '0', $FEN);
+			// anything not in $COLORS, replace with .
+			$FEN = preg_replace('%[^'.implode('', self::$COLORS).']%i', '.', $FEN);
 
 			$this->set_board($FEN);
 		}
@@ -412,11 +412,11 @@ class Pentago
 			throw new MyException(__METHOD__.': Incorrect board size given');
 		}
 
-		if (36 == $length && preg_match('/[^0XO]+/i', $xFEN)) {
+		if (36 == $length && preg_match('/[^\.XO]+/i', $xFEN)) {
 			throw new MyException(__METHOD__.': Invalid board character found');
 		}
 
-		if (81 == $length && preg_match('/[^0XOSZ]+/i', $xFEN)) {
+		if (81 == $length && preg_match('/[^\.XOSZ]+/i', $xFEN)) {
 			throw new MyException(__METHOD__.': Invalid board character found');
 		}
 
@@ -805,7 +805,7 @@ class Pentago
 
 		// create an expanded FEN, then run it through the board setter
 		// to clean it up and parse it
-		$this->set_board(str_repeat('0', $board_size));
+		$this->set_board(str_repeat('.', $board_size));
 
 		// set the current player
 		$this->current_player = 1;
