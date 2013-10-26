@@ -1451,7 +1451,7 @@ class Game
 // TODO: get the stats table built
 // add things like number of wins by white, black, red, and blue
 // number of draws, losses, etc
-exit;
+return;
 
 		if (is_null($this->winner)) {
 			throw new MyException (__METHOD__.': Game (#'.$this->id.') is not finished ('.$this->state.')');
