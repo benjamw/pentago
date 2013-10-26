@@ -453,6 +453,10 @@ class Game
 			foreach ($winners as $winner) {
 // TODO: store the match score when saving the game
 // also pull the match score into the player data when pulling the players
+				if (empty($this->_players[$winner]['score'])) {
+					$this->_players[$winner]['score'] = 0;
+				}
+
 				$this->_players[$winner]['score'] += (1 / count($outcome));
 			}
 
@@ -460,16 +464,25 @@ class Game
 				if (in_array($player['player_id'], $winners)) {
 					if (1 === count($winners)) {
 						$player['object']->add_win( );
-						Email::send('won', $this->_players['player_id'], array('opponent' => $this->name));
+
+						if ((int) $player['player_id'] !== $current_player) {
+							Email::send('won', $player['player_id'], array('opponent' => $this->name));
+						}
 					}
 					else {
 						$player['object']->add_draw( );
-						Email::send('draw', $this->_players['player_id'], array('opponent' => $this->name));
+
+						if ((int) $player['player_id'] !== $current_player) {
+							Email::send('draw', $player['player_id'], array('opponent' => $this->name));
+						}
 					}
 				}
 				else {
 					$player['object']->add_loss( );
-					Email::send('defeated', $this->_players['player_id'], array('opponent' => $this->_players[$current_player]['object']->username));
+
+					if ((int) $player['player_id'] !== $current_player) {
+						Email::send('defeated', $player['player_id'], array('opponent' => $this->_players[$current_player]['object']->username));
+					}
 				}
 			}
 		}
@@ -1094,6 +1107,50 @@ class Game
 	}
 
 
+	/** public function get_outcome
+	 *		Returns the outcome string and outcome
+	 *
+	 * @param int id of observing player
+	 * @return array (outcome text, outcome string)
+	 */
+	public function get_outcome($player_id)
+	{
+		call(__METHOD__);
+
+		$player_id = (int) $player_id;
+
+		if ( ! in_array($this->state, array('Finished', 'Draw'))) {
+			return false;
+		}
+
+		if ( ! empty($this->winner)) {
+			if (1 === count($this->winner)) {
+				list($winner,) = each($this->winner);
+				if ($player_id === (int) $winner) {
+					return array('You Won !!', 'won');
+				}
+				else {
+					return array($this->_players[$winner]['object']->username.' Won', 'lost');
+				}
+			}
+			else {
+				$won = false;
+				$winners = array_keys($this->winner);
+				foreach ($winners as & $winner) { // mind the reference
+					if ($player_id === (int) $winner) {
+						$won = true;
+					}
+
+					$winner = $this->_players[$winner]['object']->username;
+				}
+				unset($winner); // kill the reference
+
+				return array('Winners: '.implode(', ', $winners), ($won ? 'won' : 'lost'));
+			}
+		}
+	}
+
+
 	/** protected function _pull
 	 *		Pulls all game data from the database
 	 *
@@ -1340,6 +1397,8 @@ class Game
 		}
 
 		if ($update_game) {
+			call('UPDATED GAME');
+			call($update_game);
 			$update_modified = true;
 			$this->_mysql->insert(self::GAME_TABLE, $update_game, " WHERE game_id = '{$this->id}' ");
 		}
@@ -1363,6 +1422,8 @@ class Game
 
 		if ($new_board != $board) {
 			call('UPDATED BOARD');
+			call($new_board);
+			call($new_move);
 			$update_modified = true;
 
 			$this->_mysql->insert(self::GAME_HISTORY_TABLE, array('board' => $new_board, 'move' => $new_move, 'game_id' => $this->id));
