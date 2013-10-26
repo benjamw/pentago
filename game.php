@@ -130,7 +130,7 @@ else {
 	$turn = '<span class="opponent '.$color.'">'.$turn.'\'s turn</span>';
 }
 
-if ( ! empty($Game->winner)) {
+if ($Game->winner) {
 	list($win_text, $win_class) = $Game->get_outcome($_SESSION['player_id']);
 	$turn = '<span class="'.$win_class.'">Game Over: '.$win_text.'</span>';
 }
@@ -156,11 +156,12 @@ $meta['head_data'] = '
 				undo_requested: '.json_encode($Game->undo_requested($_SESSION['player_id'])).',
 				color: "'.(isset($players[$_SESSION['player_id']]) ? $players[$_SESSION['player_id']]['color'] : '').'",
 				code: "'.(isset($players[$_SESSION['player_id']]) ? $players[$_SESSION['player_id']]['code'] : '').'",
-				state: "'.(( ! $Game->watch_mode) ? (( ! $Game->paused) ? (empty($Game->winner) ? 'playing' : 'finished') : 'paused') : 'watching').'",
+				state: "'.strtolower($Game->state).'",
 				last_move: '.$Game->last_move.',
 				my_turn: '.($Game->get_players_turn($_SESSION['player_id']) ? 'true' : 'false').',
 				game_history: '.$Game->get_history(true).',
-				divisor: '.$divisor.'
+				divisor: '.$divisor.',
+				winner: '.json_encode($Game->winner).'
 			};
 
 		GAME.move_count = GAME.game_history.length;

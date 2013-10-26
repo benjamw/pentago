@@ -7,7 +7,7 @@ var refresh_timeout = 30001; // 30 seconds
 
 $(document).ready( function( ) {
 	// make the table row clicks work
-	$('.datatable tbody tr:not(tr.lowlight)').css('cursor', 'pointer').click( function( ) {
+	$('.datatable tbody tr').css('cursor', 'pointer').click( function( ) {
 		var id = $(this).attr('id').substr(1);
 		var state = $($(this).children( )[2]).text( );
 
