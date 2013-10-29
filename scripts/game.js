@@ -59,7 +59,7 @@ console.log('REFRESH TIMER - REFRESHING');
 				timeout += Math.floor(timeout * 0.001) * 1000;
 			}
 
-			++timeout;
+			timeout += 1;
 console.log('REFRESH TIMER - '+ timeout);
 
 			start( );
@@ -128,7 +128,7 @@ console.log('REFRESH TIMER - '+ timeout);
 				isValueSet = true;
 			}
 
-			for (index = 0; length > index; ++index) {
+			for (index = 0; length > index; index += 1) {
 				if (this.hasOwnProperty(index)) {
 					if (isValueSet) {
 						value = callback(value, this[index], index, this);
@@ -149,13 +149,42 @@ console.log('REFRESH TIMER - '+ timeout);
 	}
 
 
+	if ('function' !== typeof String.prototype.replaceAt) {
+		String.prototype.replaceAt = function(index, character) {
+			return this.substr(0, index) + character + this.substr(index + character.length);
+		};
+	}
+
+
+	/**
+	 * Returns true if an object is an array, false if it is not.
+	 *
+	 * Note that this is not a prototype function and
+	 * must be called as "Array.isArray(foo)" instead
+	 * of "foo.isArray( )"
+	 *
+	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray
+	 * @param mixed
+	 * @return boolean object is an array
+	 */
+	if ( ! Array.isArray) {
+		Array.isArray = function (vArg) {
+			return '[object Array]' === Object.prototype.toString.call(vArg);
+		};
+	}
+
+
+	// jQuery animateRotate plugin/function
 	$.fn.animateRotate = function(angle, duration, easing, complete) {
-		var args = $.speed(duration, easing, complete);
-		var step = args.step;
+		var args = $.speed(duration, easing, complete),
+			step = args.step;
+
 		return this.each(function(i, e) {
 			args.step = function(now) {
 				$.style(e, 'transform', 'rotate(' + now + 'deg)');
-				if (step) return step.apply(this, arguments);
+				if (step) {
+					return step.apply(this, arguments);
+				}
 			};
 
 			$({deg: 0}).animate({deg: angle}, args);
@@ -164,6 +193,201 @@ console.log('REFRESH TIMER - '+ timeout);
 
 
 // --- FUNCTIONS ---
+
+
+	function xy_to_index(x, y, div) {
+		if (Array.isArray(x)) {
+			y = x[1];
+			x = x[0];
+		}
+
+		if ('undefined' === typeof div) {
+			div = GAME.divisor;
+		}
+
+		return (parseInt(div, 10) * 3 * parseInt(y, 10)) + parseInt(x, 10);
+	}
+
+
+	function index_to_xy(idx) {
+		idx = parseInt(idx, 10);
+
+		var side = parseInt(GAME.divisor, 10) * 3,
+			x = idx % side,
+			y = Math.floor(idx / side);
+
+		return [x, y];
+	}
+
+
+	function get_block(xFEN, block) {
+		block = (block +'').toUpperCase( ).slice(0, 1);
+		block = location_to_index(block);
+
+		var x,
+			y,
+			sect = '';
+
+		for (y = block[1]; y < (block[1] + 3); y += 1) {
+			for (x = block[0]; x < (block[0] + 3); x += 1) {
+				sect += xFEN.charAt(xy_to_index(x, y));
+			}
+		}
+
+		return sect;
+	}
+
+
+	function put_block(xFEN, sect, block) {
+		block = (block +'').toUpperCase( ).slice(0, 1);
+		block = location_to_index(block);
+
+		var x,
+			y;
+
+		for (y = 0; y < 3; y += 1) {
+			for (x = 0; x < 3; x += 1) {
+				xFEN = xFEN.replaceAt(xy_to_index(x + block[0], y + block[1]), sect.charAt(xy_to_index(x, y, 1)));
+			}
+		}
+
+		return xFEN;
+	}
+
+
+	function location_to_index(block, square) {
+		if (Array.isArray(block)) {
+			square = block[1];
+			block = block[0];
+		}
+
+		block = (block +'').toUpperCase( ).slice(0, 1);
+		square = (square +'').toUpperCase( ).slice(0, 1);
+
+		var i,
+			trans_block = {
+				'A' : [0, 0],
+				'B' : [3, 0],
+				'C' : [0, 3],
+				'D' : [3, 3],
+				'E' : [6, 0],
+				'F' : [6, 3],
+				'G' : [0, 6],
+				'H' : [3, 6],
+				'I' : [6, 6],
+				'J' : [6, 6] // same as I
+			},
+			trans_square = {
+				'A' : [0, 0],
+				'B' : [1, 0],
+				'C' : [2, 0],
+				'D' : [0, 1],
+				'E' : [1, 1],
+				'F' : [2, 1],
+				'G' : [0, 2],
+				'H' : [1, 2],
+				'I' : [2, 2],
+				'J' : [2, 2] // same as I
+			},
+			block = trans_block[block],
+			square = trans_square[square],
+			xy = [ ];
+
+		if ('undefined' === typeof square) {
+			return block;
+		}
+
+		for (i = 0; i < 2; i += 1) {
+			xy[i] = block[i] + square[i];
+		}
+
+		return xy_to_index(xy);
+	}
+
+
+	function place_piece(xFEN, data) {
+		if ( ! Array.isArray(data)) {
+			data = data.slice('');
+		}
+
+		return xFEN.replaceAt(location_to_index(data[1], data[2]), data[0]);
+	}
+
+
+	function rotate_block(xFEN, data) {
+		if ( ! Array.isArray(data)) {
+			data = data.slice('');
+		}
+
+		var moving_section = get_block(xFEN, data[3]),
+			moved_section = new Array(10).join('.'),
+			x,
+			y;
+
+		/*
+			rotate the section
+			when rotating clockwise, the new x value is the old y value
+			and the new y value is a flipped old x value (0 => 2; 1 => 1, 2 => 0)
+			i.e.- new y = abs(2 - old x)  (abs is just to make sure it's positive)
+			when rotating the opposite direction, the opposite happens
+			the new y is the old x, and the new x is a flipped old y
+			crazy matrices...
+
+			examples :
+
+				| 0-0  1-0  2-0 |         | 0-2  0-1  0-0 |
+				|               |         |               |
+				| 0-1  1-1  2-1 |   CW->  | 1-2  1-1  1-0 |
+				|               |  <-CCW  |               |
+				| 0-2  1-2  2-2 |         | 2-2  2-1  2-0 |
+		*/
+
+		if ('L' === data[4]) {
+			for (y = 0; y < 3; y += 1) {
+				for (x = 0; x < 3; x += 1) {
+					moved_section = moved_section.replaceAt(xy_to_index(y, Math.abs(2 - x), 1), moving_section.charAt(xy_to_index(x, y, 1)));
+				}
+			}
+		}
+		else {
+			for (y = 0; y < 3; y += 1) {
+				for (x = 0; x < 3; x += 1) {
+					moved_section = moved_section.replaceAt(xy_to_index(Math.abs(2 - y), x, 1), moving_section.charAt(xy_to_index(x, y, 1)));
+				}
+			}
+		}
+
+		return put_block(xFEN, moved_section, data[3]);
+	}
+
+
+	function redraw_block(data) {
+		var j,
+			idx,
+			piece,
+			type,
+			html = '<div class="block">',
+			quads = [['A', 'B', 'C', 'D'], ['A','B','E','C','D','F','G','H','I']],
+			quad = quads[((2 === GAME.divisor) ? 0 : 1)],
+			i = quad.indexOf(data[3]),
+			xFEN = rotate_block(place_piece(GAME.game_history[GAME.game_history.length - 1][0], data), data, i);
+
+		for (j = 0; j < 9; j += 1) {
+			idx = get_index(i, j, GAME.divisor);
+			piece = xFEN.charAt(idx);
+
+			type = [];
+			if ('.' !== piece) {
+				type.push(piece.toLowerCase( ));
+			}
+
+			html += '<div'+ ((0 !== type.length) ? ' class="'+ type.join(' ') +'"' : '') +'></div>';
+		}
+
+		html += '</div>';
+
+		return html;
+	}
 
 
 	function set_square(event) {
@@ -205,7 +429,21 @@ console.log('REFRESH TIMER - '+ timeout);
 			$move.val($move.val( ) + $this.attr('id').slice(2));
 
 			// rotate the block
-			$('#blk_'+ $this.attr('id').slice(2, 3)).css('z-index', 10).animateRotate((('R' === $this.attr('id').slice(3)) ? 90 : -90), 500, 'swing');
+			$('#blk_'+ $this.attr('id').slice(2, 3))
+				.css('z-index', 10)
+				.animateRotate((('R' === $this.attr('id').slice(3)) ? 90 : -90), 500, 'swing', function( ) {
+					$('#blk_'+ $this.attr('id').slice(2, 3)).replaceWith(
+						redraw_block($move.val( ).split(''))
+/*
+						$(redraw_block($move.val( ).split('')))
+							.css({
+								'z-index': 10,
+								'transform': 'rotate('+ (('R' === $this.attr('id').slice(3)) ? -45 : 45) +'deg)'
+							})
+							.animateRotate((('R' === $this.attr('id').slice(3)) ? 45 : -45), 250, 'linear') // no closing ;, it's in a function call
+*/
+					);
+				});
 
 			if (debug) {
 				window.location = 'ajax_helper.php'+debug_query+'&'+$('form#game').serialize( )+'&turn=1';
@@ -276,7 +514,6 @@ console.log('REFRESH TIMER - '+ timeout);
 
 
 	function create_board(xFEN, winner) {
-console.log(xFEN);
 		if ( ! xFEN) {
 			return false;
 		}
