@@ -510,6 +510,8 @@ class Game
 	public function resign($player_id)
 	{
 		call(__METHOD__);
+// TODO: make this work
+return false;
 
 		if ($this->paused) {
 			throw new MyException(__METHOD__.': Trying to perform an action on a paused game');
@@ -1872,6 +1874,9 @@ return;
 	 */
 	static public function write_game_file($game_id)
 	{
+// until I get it built
+return false;
+
 		$game_id = (int) $game_id;
 
 		if ( ! Settings::read('save_games')) {
@@ -1904,7 +1909,7 @@ return;
 		}
 
 		// open the file for writing
-		$filename = $GLOBALS['__GAMES_ROOT'].'Pentago_'.$game_id.'_'.date('Ymd', strtotime($game['create_date'])).'.dat';
+		$filename = $GLOBALS['GAMES_DIR'].'Pentago_'.$game_id.'_'.date('Ymd', strtotime($game['create_date'])).'.dat';
 		$file = fopen($filename, 'wb');
 
 		if (false === $file) {
