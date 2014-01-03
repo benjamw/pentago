@@ -248,7 +248,7 @@ class Pentago
 	 * @return int player id
 	 */
 	public function get_current_player( ) {
-		return (int) $this->current_player;
+		return (int) $this->players[$this->current_player];
 	}
 
 

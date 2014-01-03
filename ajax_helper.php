@@ -187,6 +187,7 @@ $player_id = (int) $_POST['player_id'];
 if (($player_id != $_SESSION['player_id']) && ! $GLOBALS['Player']->is_admin) {
 	throw new MyException('ERROR: Incorrect player id given');
 }
+$Game->set_player($_SESSION['player_id']);
 
 
 // run the simple button actions

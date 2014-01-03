@@ -436,6 +436,9 @@ class Game
 	{
 		call(__METHOD__);
 
+		$current_player = $this->_pentago->get_current_player( );
+		call($current_player);
+
 		try {
 			$outcome = $this->_pentago->do_move($move);
 		}
@@ -443,7 +446,8 @@ class Game
 			throw $e;
 		}
 
-		$current_player = $this->_pentago->get_current_player( );
+		$next_player = $this->_pentago->get_current_player( );
+		call($next_player);
 
 		if ($outcome) {
 			$winners = array_keys($outcome);
@@ -466,14 +470,14 @@ class Game
 						$player['object']->add_win( );
 
 						if ((int) $player['player_id'] !== $current_player) {
-							Email::send('won', $player['player_id'], array('opponent' => $this->name));
+							Email::send('won', $player['player_id'], array('opponent' => $this->get_opponents( )));
 						}
 					}
 					else {
 						$player['object']->add_draw( );
 
 						if ((int) $player['player_id'] !== $current_player) {
-							Email::send('draw', $player['player_id'], array('opponent' => $this->name));
+							Email::send('draw', $player['player_id'], array('opponent' => $this->get_opponents( )));
 						}
 					}
 				}
@@ -487,27 +491,8 @@ class Game
 			}
 		}
 		else {
-			$next = false;
-			foreach ($this->_players as $player_id => $player) {
-				if ($next) {
-					// $player_id is the ID needed
-					$next = false;
-					break;
-				}
-
-				if ($current_player === $player_id) {
-					$next = true;
-				}
-			}
-
-			// if we get here, the turns have started over
-			if ($next) {
-				reset($this->_players);
-				list($player_id, ) = each($this->_players);
-			}
-
 			// send the email
-			Email::send('turn', $player_id, array('opponent' => $this->name, 'game_id' => $this->id));
+			Email::send('turn', $next_player, array('opponent' => $this->get_opponents( ), 'game_id' => $this->id));
 		}
 
 		$this->save( );
@@ -975,6 +960,25 @@ class Game
 	}
 
 
+	/** public function set_player
+	 *		Sets who the current player is
+	 *
+	 * @param int player id
+	 * @return void
+	 */
+	public function set_player($player_id)
+	{
+		call(__METHOD__);
+
+		$player_id = (int) $player_id;
+
+		if ( ! empty($this->_players[$player_id])) {
+			$this->_players['player'] =& $this->_players[$player_id];
+		}
+		call($this->_players);
+	}
+
+
 	/** public function get_players
 	 *		Returns the game players
 	 *
@@ -985,7 +989,53 @@ class Game
 	{
 		call(__METHOD__);
 
-		return $this->_players;
+		$players = $this->_players;
+		unset($players['player']);
+
+		return $players;
+	}
+
+
+	/** public function get_opponents
+	 *		Returns a comma separated list of player names
+	 *
+	 * @param void
+	 * @return string opponent names
+	 */
+	public function get_opponents( )
+	{
+		call(__METHOD__);
+
+		$player_id = 0;
+		if ( ! empty($this->_players['player']['player_id'])) {
+			$player_id = (int) $this->_players['player']['player_id'];
+		}
+
+		$opponents = array( );
+		foreach ($this->_players as $p_id => $player) {
+			if ($player_id === (int) $player['player_id']) {
+				continue;
+			}
+
+			$opponents[] = $player['object']->username;
+		}
+
+		switch (count($opponents)) {
+			case 0 :
+				return '--ERROR 1--';
+
+			case 1 :
+				return $opponents[0];
+
+			case 2 :
+				return $opponents[0].' and '.$opponents[1];
+
+			default :
+				$last = array_pop($opponents);
+				return implode(', ', $opponents).', and '.$last;
+		}
+
+		return '--ERROR 2--';
 	}
 
 

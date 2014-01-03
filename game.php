@@ -22,6 +22,7 @@ elseif ( ! isset($_SESSION['game_id'])) {
 try {
 	$Match = new Match(Game::get_match_id((int) $_SESSION['game_id']));
 	$Game = $Match->get_current_game( );
+	$Game->set_player($_SESSION['player_id']);
 	$players = $Game->get_players( );
 }
 catch (MyException $e) {
