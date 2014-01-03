@@ -279,6 +279,8 @@ class Match
 			throw new MyException(__METHOD__.': Match could not be created');
 		}
 
+		$host_name = Player::get_username($_SESSION['player_id']);
+
 		// now add the host player to the match
 		$MP = array(
 			'match_id' => $insert_id,
@@ -305,6 +307,9 @@ class Match
 				'score' => null, // this is how we test for readiness
 			);
 			$Mysql->insert(self::MATCH_PLAYER_TABLE, $MP);
+
+			// send the invite to the player
+			Email::send('invite', $opp, array('opponent' => $host_name));
 		}
 
 		return $insert_id;
