@@ -525,7 +525,7 @@ class Game
 			throw new MyException(__METHOD__.': Player (#'.$player_id.') trying to resign from a game (#'.$this->id.') they are not playing in');
 		}
 
-		if ($this->_players['player']['player_id'] != $player_id) {
+		if (empty($this->_players['player']['player_id']) || ((int) $this->_players['player']['player_id'] !== (int) $player_id)) {
 			throw new MyException(__METHOD__.': Player (#'.$player_id.') trying to resign opponent from a game (#'.$this->id.')');
 		}
 
@@ -897,7 +897,7 @@ class Game
 	{
 		call(__METHOD__);
 
-		$player_id = (int) $this->_pentago->current_player;
+		$player_id = (int) $this->_pentago->get_current_player( );
 
 		if ( ! $this->is_player($player_id) || $this->is_turn( ) || ('Playing' != $this->state) || $this->paused) {
 			return false;
