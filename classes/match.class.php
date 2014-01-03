@@ -145,11 +145,12 @@ class Match
 	 *		Sets all outside data
 	 *
 	 * @param int optional match id
+	 * @param Game optional referring Game object reference
 	 * @param Mysql optional object reference
 	 * @action instantiates object
 	 * @return void
 	 */
-	public function __construct($id = 0, Mysql $Mysql = null)
+	public function __construct($id = 0, Game $Game = null, Mysql $Mysql = null)
 	{
 		call(__METHOD__);
 
@@ -167,7 +168,7 @@ class Match
 		}
 
 		try {
-			$this->_pull( );
+			$this->_pull($Game);
 		}
 		catch (MyException $e) {
 			throw $e;
@@ -662,11 +663,11 @@ class Match
 	/** protected function _pull
 	 *		Pulls all match data from the database
 	 *
-	 * @param void
+	 * @param Game optional referring game object reference
 	 * @action pulls the match data
 	 * @return void
 	 */
-	protected function _pull( )
+	protected function _pull(Game $Game = null)
 	{
 		call(__METHOD__);
 
@@ -688,7 +689,7 @@ class Match
 			$this->paused = (bool) $result['paused'];
 
 			try {
-				$this->_pull_games( );
+				$this->_pull_games($Game);
 				$this->_pull_players( );
 			}
 			catch (MyException $e) {
@@ -701,11 +702,11 @@ class Match
 	/** protected function _pull_games
 	 *		Pulls all game data from the database
 	 *
-	 * @param void
+	 * @param Game optional referring game object reference
 	 * @action pulls the game data
 	 * @return void
 	 */
-	protected function _pull_games( )
+	protected function _pull_games(Game $Game = null)
 	{
 		call(__METHOD__);
 
@@ -723,7 +724,11 @@ class Match
 		if ($games) {
 			foreach ($games as $game) {
 				$this->_games[$game['game_id']] = $game;
-				$this->_games[$game['game_id']]['object'] = new Game($game['game_id']);
+				$this->_games[$game['game_id']]['object'] = (
+					( ! empty($Game) && ((int) $Game->id === (int) $game['game_id']))
+						? $Game
+						: new Game($game['game_id'], $this)
+				);
 			}
 
 			// grab the last one and get the game state

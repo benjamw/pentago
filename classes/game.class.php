@@ -242,11 +242,12 @@ class Game
 	 *		Sets all outside data
 	 *
 	 * @param int optional game id
+	 * @param Match optional referring object reference
 	 * @param Mysql optional object reference
 	 * @action instantiates object
 	 * @return void
 	 */
-	public function __construct($id = 0, Mysql $Mysql = null)
+	public function __construct($id = 0, Match $Match = null, Mysql $Mysql = null)
 	{
 		call(__METHOD__);
 
@@ -262,7 +263,7 @@ class Game
 		$this->_mysql = $Mysql;
 
 		try {
-			$this->_pull( );
+			$this->_pull($Match);
 		}
 		catch (MyException $e) {
 			throw $e;
@@ -1206,11 +1207,11 @@ return false;
 	/** protected function _pull
 	 *		Pulls all game data from the database
 	 *
-	 * @param void
+	 * @param Match optional referring object reference
 	 * @action pulls the game data
 	 * @return void
 	 */
-	protected function _pull( )
+	protected function _pull(Match $Match = null)
 	{
 		call(__METHOD__);
 
@@ -1235,6 +1236,8 @@ return false;
 		$this->winner = array_trim($result['winner'], 'int');
 
 		$this->_extra_info = array_merge_plus(self::$_EXTRA_INFO_DEFAULTS, unserialize($result['extra_info']));
+
+		$this->_match = ( ! empty($Match) ? $Match : new Match($result['match_id'], $this));
 
 		try {
 			$this->_pull_history( );
