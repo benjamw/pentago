@@ -442,6 +442,7 @@ class Game
 
 		try {
 			$outcome = $this->_pentago->do_move($move);
+			call($outcome);
 		}
 		catch (MyException $e) {
 			throw $e;
@@ -456,13 +457,11 @@ class Game
 			$this->_extra_info['winners'] = $outcome;
 
 			foreach ($winners as $winner) {
-// TODO: store the match score when saving the game
-// also pull the match score into the player data when pulling the players
-				if (empty($this->_players[$winner]['score'])) {
-					$this->_players[$winner]['score'] = 0;
+				if (empty($this->_players[$winner]['match']['score'])) {
+					$this->_players[$winner]['match']['score'] = 0;
 				}
 
-				$this->_players[$winner]['score'] += (1 / count($outcome));
+				$this->_players[$winner]['match']['score'] += (1 / count($outcome));
 			}
 
 			foreach ($this->_players as $player) {
@@ -497,6 +496,10 @@ class Game
 		}
 
 		$this->save( );
+
+		if ($outcome) {
+			$this->_match->next_game( );
+		}
 
 		return $outcome;
 	}
@@ -1328,6 +1331,7 @@ return false;
 		foreach ($result as $key => $player) {
 			$player['code'] = Pentago::$COLORS[$player['order_num']];
 			$player['color'] = self::$COLORS[Pentago::$COLORS[$player['order_num']]];
+			$player['match'] = $this->_match->get_player($player['player_id']);
 			$player['object'] = new GamePlayer($player['player_id']);
 			$this->_players[$player['player_id']] = $player;
 			$names[] = $player['object']->username;
@@ -1482,6 +1486,39 @@ return false;
 			$update_modified = true;
 
 			$this->_mysql->insert(self::GAME_HISTORY_TABLE, array('board' => $new_board, 'move' => $new_move, 'game_id' => $this->id));
+		}
+
+		// grab the current match scores from the database
+		$query = "
+			SELECT player_id, score
+			FROM ".Match::MATCH_PLAYER_TABLE."
+			WHERE match_id = '{$this->_match->id}'
+		";
+		$scores = $this->_mysql->fetch_array($query);
+
+		foreach ($scores as $score) {
+			foreach ($this->_players as $key => $player) {
+				if ( ! is_int($key)) {
+					continue;
+				}
+
+				if ((int) $score['player_id'] === (int) $player['player_id']) {
+					if ((float) $score['score'] !== (float) $player['match']['score']) {
+						$data = array(
+							'score' => $player['match']['score'],
+						);
+
+						$where = "
+							WHERE `match_id` = '{$this->_match->id}'
+								AND `player_id` = '{$player['player_id']}'
+						";
+
+						$this->_mysql->insert(Match::MATCH_PLAYER_TABLE, $data, $where);
+
+						$update_modified = true;
+					}
+				}
+			}
 		}
 
 		// update the game modified date

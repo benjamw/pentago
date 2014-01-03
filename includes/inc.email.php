@@ -19,6 +19,15 @@ When it is your turn, we will send you an email. Good Luck!'),
 
 
 
+	'next' => array(
+		'subject' => 'Game Started',
+		'message' => '
+A [[[GAME_NAME]]] game you are playing against [[[opponent]]] at [[[site_name]]] has begun.
+
+When it is your turn, we will send you an email. Good Luck!'),
+
+
+
 	'turn' => array(
 		'subject' => 'Your Turn',
 		'message' => '

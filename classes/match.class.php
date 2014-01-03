@@ -317,6 +317,52 @@ class Match
 	}
 
 
+	public function next_game( )
+	{
+		call(__METHOD__);
+
+		// test the status of the last game as well as the player's scores
+		// and if both are valid, create a new game
+
+		$this->_pull_games( );
+		$this->_pull_players( );
+
+		$valid = true;
+
+		// make sure all current games are finished
+		foreach ($this->_games as $game) {
+			if ('Finished' !== $game['object']->state) {
+				$valid = false;
+				break;
+			}
+		}
+
+		// make sure the match is not finished
+		foreach ($this->_players as $player) {
+			if (3 <= (float) $player['score']) {
+				$valid = false;
+				break;
+			}
+		}
+
+		if ($valid) {
+			$game_id = Game::create($this->id);
+
+			$game = new Game($game_id);
+
+			// send the emails
+			foreach ($this->_players as $player) {
+				$game->set_player($player['player_id']);
+				Email::send((empty($this->_games) ? 'start' : 'next'), $player['player_id'], array('opponent' => $game->get_opponents( )));
+			}
+
+			return $game_id;
+		}
+
+		return false;
+	}
+
+
 	/** public function is_player
 	 *		Tests if the given player is already in this match or not
 	 *
@@ -334,6 +380,26 @@ class Match
 		}
 
 		return false;
+	}
+
+
+	/** public function get_player
+	 *		Returns the data for the given player
+	 *
+	 * @param int player id
+	 * @return array player data or false on failure
+	 */
+	public function get_player($player_id)
+	{
+		call(__METHOD__);
+
+		$player_id = (int) $player_id;
+
+		if ( ! $this->is_player($player_id)) {
+			return false;
+		}
+
+		return $this->_players[$player_id];
 	}
 
 
@@ -496,28 +562,9 @@ class Match
 
 		// woohoo... start the match
 
-		$game_id = Game::create($match_id);
+		$_this = new Match($match_id);
 
-		// send the emails
-		foreach ($players as $player) {
-			$opp = array( );
-
-			foreach ($players as $p_id) {
-				if ($player == $p_id) {
-					continue;
-				}
-
-				$opp[] = $GLOBALS['_PLAYERS'][$p_id];
-			}
-			$opps = implode(', ', $opp);
-			$opps = strrev($opps);
-			$opps = preg_replace('/ ,/', ' dna ,', $opps, 1);
-			$opps = strrev($opps);
-
-			Email::send('start', $player, array('opponent' => $opps));
-		}
-
-		return $game_id;
+		return $_this->next_game( );
 	}
 
 
@@ -760,7 +807,7 @@ class Match
 		$this->_players = array( );
 
 		$query = "
-			SELECT player_id
+			SELECT *
 			FROM ".self::MATCH_PLAYER_TABLE."
 			WHERE match_id = '{$this->id}'
 		";
