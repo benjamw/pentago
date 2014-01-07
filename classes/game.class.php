@@ -460,7 +460,11 @@ class Game
 				$this->_players[$winner]['match']['score'] += (1 / count($outcome));
 			}
 
-			foreach ($this->_players as $player) {
+			foreach ($this->_players as $key => $player) {
+				if ( ! is_numeric($key)) {
+					continue;
+				}
+
 				if (in_array($player['player_id'], $winners)) {
 					if (1 === count($winners)) {
 						$player['object']->add_win( );
