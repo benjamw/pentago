@@ -589,6 +589,7 @@ console.log('REFRESH TIMER - '+ timeout);
 
 		// make all our pieces clickable
 		$('div#board .block div').not('.x, .o, .s, .z')
+			.off('click mouseenter mouseleave')
 			.on({
 				click: set_square,
 				mouseenter: function( ) {
