@@ -1541,8 +1541,8 @@ return false;
 		call($this);
 
 // TODO: get the stats table built
-// add things like number of wins by white, black, red, and blue
-// number of draws, losses, etc
+// add things like number of wins by red, blue, green, and yellow
+// number of draws, losses, etc. for each
 return;
 
 		if (is_null($this->winner)) {
