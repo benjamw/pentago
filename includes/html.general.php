@@ -75,7 +75,7 @@ function get_header($meta = null) {
 			}
 		}
 
-		$game_data = (isset($meta['game_data'])) ? $meta['game_data'] : Game::get_list($_SESSION['player_id'], false);
+		$game_data = (isset($meta['game_data'])) ? $meta['game_data'] : Match::get_list($_SESSION['player_id'], false);
 	}
 
 	// if we are admin logged in as someone else, let us know
@@ -200,7 +200,7 @@ EOF;
 
 		if ($game_data) {
 			$html .= '
-		<div id="mygames_title">My Games</div>
+		<div id="mygames_title">My Matches</div>
 		<nav id="mygames" class="box">
 			<ul>';
 

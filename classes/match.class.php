@@ -873,6 +873,7 @@ class Match
 		return $game_ids;
 	}
 
+
 	/** static public function get_open_list
 	 *		Returns a list array of all open matches in the database
 	 *
@@ -921,6 +922,158 @@ class Match
 				$list[$key] = $match;
 			}
 		}
+
+		return $list;
+	}
+
+
+	/** static public function get_list
+	 *		Returns a list array of all the matches in the database
+	 *		with matches which need the users attention highlighted
+	 *
+	 *		NOTE: $player_id is required when not pulling all games
+	 *		(when $all is false)
+	 *
+	 * @param int optional player's id
+	 * @param bool optional pull all matches (vs only given player's matches)
+	 * @return array game list (or bool false on failure)
+	 */
+	static public function get_list($player_id = 0, $all = true)
+	{
+		call(__METHOD__);
+		call(func_get_args( ));
+
+		$Mysql = Mysql::get_instance( );
+
+		$player_id = (int) $player_id;
+		$all = (bool) $all;
+
+		if ( ! $all && ! $player_id) {
+			throw new MyException(__METHOD__.': Player ID required when not pulling all matches');
+		}
+
+		// check the session for any stored lists
+		if ( ! empty($GLOBALS['CACHE']['match_list'][$player_id][(int) $all])) {
+			return $GLOBALS['CACHE']['match_list'][$player_id][(int) $all];
+		}
+
+		$WHERE = " WHERE G.game_id IN (
+				SELECT MAX(game_id)
+				FROM ".Game::GAME_TABLE."
+				GROUP BY match_id
+			)
+		";
+		$AND = "";
+		if ( ! $all) {
+			$query = "
+				SELECT DISTINCT MP.match_id
+				FROM ".self::MATCH_PLAYER_TABLE." AS MP
+				WHERE MP.player_id = '{$player_id}'
+			";
+			$match_ids = $Mysql->fetch_value_array($query);
+
+			$match_ids[] = 0; // don't break the IN clause
+			$AND = " AND G.match_id IN (".implode(',', $match_ids).") ";
+		}
+
+		$query = "
+			SELECT G.*
+				, M.large_board
+				, G.winner IS NOT NULL AS finished
+				, 0 AS in_game
+				, 0 AS my_turn
+				, IF((0 = MAX(GH.move_date)) OR MAX(GH.move_date) IS NULL, G.create_date, MAX(GH.move_date)) AS last_move
+				, (COUNT(GH.game_id) - 1) AS moves
+			FROM ".Game::GAME_TABLE." AS G
+				LEFT JOIN ".Game::GAME_HISTORY_TABLE." AS GH
+					USING (game_id)
+				LEFT JOIN ".self::MATCH_TABLE." AS M
+					USING (match_id)
+			{$WHERE}
+			{$AND}
+			GROUP BY G.game_id
+			ORDER BY finished ASC
+				, last_move DESC
+		";
+		$list = $Mysql->fetch_array($query);
+
+		if ($list) {
+			foreach ($list as & $game) { // mind the reference
+				// grab all the players in the game
+				$query = "
+					SELECT P.*
+						, MP.*
+						, P.player_id AS player_id
+					FROM ".Game::GAME_PLAYER_TABLE." AS GP
+						LEFT JOIN ".Player::PLAYER_TABLE." AS P
+							ON (P.player_id = GP.player_id)
+						LEFT JOIN ".Game::GAME_TABLE." AS G
+							ON (G.game_id = GP.game_id)
+						LEFT JOIN ".self::MATCH_PLAYER_TABLE." AS MP
+							ON (MP.match_id = G.match_id
+								AND MP.player_id = GP.player_id)
+					WHERE GP.game_id = '{$game['game_id']}'
+					GROUP BY GP.order_num
+				";
+				$players = $Mysql->fetch_array($query);
+
+				$game_players = array( );
+				$keyed_players = array( );
+				if ($players) {
+					foreach ($players as $player) {
+						$keyed_players[$player['player_id']] = $player;
+
+						$player_disp = htmlentities($player['username'].'('.number_format($player['score'], 1).')', ENT_QUOTES, 'ISO-8859-1', false);
+
+						if ($player_id && ($player_id === (int) $player['player_id'])) {
+							$game_players[$player['player_id']] = '<span class="highlight">'.$player_disp.'</span>';
+							$game['in_game'] = 1;
+						}
+						else {
+							$game_players[$player['player_id']] = $player_disp;
+						}
+					}
+				}
+
+				$game['players'] = implode(', ', $game_players);
+				$game['name'] = strip_tags($game['players']);
+
+				// calculate the current player based on how many moves are in the history table
+				// and how many players are in the game, unless there is a winner
+				if ($game['winner']) {
+					$winners = $game['winner'];
+					array_trim($winners, 'int');
+
+					$game['turn'] = array( );
+					foreach ($winners as $winner) {
+						$game['turn'][] = $keyed_players[$winner]['username'];
+					}
+
+					$game['turn'] = implode(', ', $game['turn']);
+				}
+				else {
+					$turn_idx = ($game['moves'] % count($players));
+					$game['turn'] = $players[$turn_idx]['username'];
+				}
+
+				if ($player_id === (int) $players[$turn_idx]['player_id']) {
+					$game['my_turn'] = 1;
+				}
+
+				$game['state'] = 'Playing';
+				if ( ! empty($game['winners'])) {
+					$game['state'] = 'Finished';
+				}
+				elseif ($game['paused']) {
+					$game['state'] = 'Paused';
+				}
+			}
+			unset($game); // kill the reference
+		}
+		call($list);
+
+		// store this in session in case we need to use it later
+		$GLOBALS['CACHE']['match_list'][$player_id][(int) $all] = $list;
 
 		return $list;
 	}
