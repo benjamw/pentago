@@ -83,7 +83,6 @@ $(document).ready( function( ) {
 				url: 'ajax_helper.php',
 				data: 'invite=accept&match_id='+id[1],
 				success: function(msg) {
-alert(msg);
 					if ('-1' === msg) {
 						alert('Invite accepted.\n\nWaiting for other players to accept.');
 						if (reload) { window.location.reload( ); }
