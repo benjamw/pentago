@@ -20,8 +20,7 @@ elseif ( ! isset($_SESSION['game_id'])) {
 // load the game
 // always refresh the game data, there may be more than one person online
 try {
-	$Match = new Match(Game::get_match_id((int) $_SESSION['game_id']));
-	$Game = $Match->get_current_game( );
+	$Game = new Game((int) $_SESSION['game_id']);
 	$Game->set_player($_SESSION['player_id']);
 	$players = $Game->get_players( );
 }

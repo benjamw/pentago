@@ -355,14 +355,13 @@ class Game
 		$query = "
 			SELECT G.*
 			FROM ".self::GAME_TABLE." AS G
-			WHERE G.match_id = '{$match_id}'
-				AND G.game_id = (
+			WHERE G.game_id = (
 					SELECT MAX(game_id)
 					FROM ".self::GAME_TABLE."
 					WHERE match_id = '{$match_id}'
+						AND game_id <> '{$game_id}'
 					GROUP BY match_id
 				)
-				AND G.game_id <> '{$game_id}'
 		";
 		$game_data = $Mysql->fetch_assoc($query);
 		call($game_data);
@@ -371,18 +370,13 @@ class Game
 			// pull the players in the new player order
 			$query = "
 				SELECT GP.player_id
-				FROM ".self::MATCH_PLAYER_TABLE." AS MP
-					LEFT JOIN ".Match::MATCH_TABLE." AS M
+				FROM ".Match::MATCH_PLAYER_TABLE." AS MP
+					INNER JOIN ".Match::MATCH_TABLE." AS M
 						USING (match_id)
-					INNER JOIN ".self::GAME_PLAYER_TABLE." AS GP
-						ON (GP.match_id = MP.match_id
-							AND GP.game_id = (
-								SELECT MAX(game_id)
-								FROM ".self::GAME_TABLE."
-								WHERE match_id = '{$match_id}'
-								GROUP BY match_id
-							))
+					LEFT JOIN ".self::GAME_PLAYER_TABLE." AS GP
+						USING (player_id)
 				WHERE MP.match_id = '{$match_id}'
+					AND GP.game_id = '{$game_data['game_id']}'
 				ORDER BY GP.order_num = M.capacity DESC
 					, GP.order_num ASC
 			";
@@ -419,8 +413,10 @@ class Game
 
 		$Mysql->insert(self::GAME_HISTORY_TABLE, $data);
 
+		$that = new Game($game_id);
+
 		// send an email to the first player
-		Email::send('turn', reset($players), array('game_id' => $game_id));
+		Email::send('turn', reset($players), array('game_id' => $game_id, 'opponent' => $that->get_opponents( )));
 
 		return $game_id;
 	}
@@ -1495,10 +1491,11 @@ return false;
 			WHERE match_id = '{$this->_match->id}'
 		";
 		$scores = $this->_mysql->fetch_array($query);
+		call($scores);
 
 		foreach ($scores as $score) {
 			foreach ($this->_players as $key => $player) {
-				if ( ! is_int($key)) {
+				if ( ! is_numeric($key)) {
 					continue;
 				}
 
@@ -1507,11 +1504,13 @@ return false;
 						$data = array(
 							'score' => $player['match']['score'],
 						);
+						call($data);
 
 						$where = "
 							WHERE `match_id` = '{$this->_match->id}'
 								AND `player_id` = '{$player['player_id']}'
 						";
+						call($where);
 
 						$this->_mysql->insert(Match::MATCH_PLAYER_TABLE, $data, $where);
 
