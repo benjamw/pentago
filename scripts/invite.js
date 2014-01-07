@@ -82,7 +82,9 @@ $(document).ready( function( ) {
 				type: 'POST',
 				url: 'ajax_helper.php',
 				data: 'invite=accept&match_id='+id[1],
-				success: function(msg) {
+				success: function (msg) {
+					msg = msg.toString( );
+
 					if ('-1' === msg) {
 						alert('Invite accepted.\n\nWaiting for other players to accept.');
 						if (reload) { window.location.reload( ); }
@@ -91,7 +93,7 @@ $(document).ready( function( ) {
 						alert(msg);
 						if (reload) { window.location.reload( ); }
 					}
-					else if (msg.test(/^\d+$/)) {
+					else if (/^\d+$/.test(msg)) {
 						window.location = 'game.php?id='+msg+debug_query_;
 					}
 					else {
