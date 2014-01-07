@@ -3,6 +3,10 @@
 */
 
 
+@import "compass/css3";
+@import "compass/css3/border-radius";
+@import "compass/css3/user-interface";
+
 @import "_board";
 
 
@@ -85,10 +89,9 @@
 		span {
 			padding: 2px 5px 1px;
 			border: 1px solid #555;
-			-moz-border-radius: 3px;
-			-webkit-border-radius: 3px;
-			border-radius: 3px;
+			@include border-radius(3px);
 			cursor: pointer;
+			@include user-select(none);
 
 			&:hover {
 				border-color: #AAA;

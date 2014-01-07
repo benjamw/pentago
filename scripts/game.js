@@ -716,7 +716,12 @@ console.log('REFRESH TIMER - '+ timeout);
 
 
 	// review button clicks
-	$('#history div span:not(.disabled)').on('click', review);
+	$('#history div span:not(.disabled)')
+		.on('click', review)
+		.on('mousedown', function(evt) {
+			 // prevents text selection on quick clicks
+			evt.preventDefault( );
+		});
 
 
 	// ajax form on input button clicks
