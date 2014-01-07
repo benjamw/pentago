@@ -1717,15 +1717,19 @@ return;
 						LEFT JOIN ".self::GAME_TABLE." AS G
 							ON (G.game_id = GP.game_id)
 						LEFT JOIN ".Match::MATCH_PLAYER_TABLE." AS MP
-							ON (MP.match_id = G.match_id)
+							ON (MP.match_id = G.match_id
+								AND MP.player_id = GP.player_id)
 					WHERE GP.game_id = '{$game['game_id']}'
 					GROUP BY GP.order_num
 				";
 				$players = $Mysql->fetch_array($query);
 
 				$game_players = array( );
+				$keyed_players = array( );
 				if ($players) {
 					foreach ($players as $player) {
+						$keyed_players[$player['player_id']] = $player;
+
 						$player_disp = htmlentities($player['username'].'('.number_format($player['score'], 1).')', ENT_QUOTES, 'ISO-8859-1', false);
 
 						if ($player_id && ($player_id === (int) $player['player_id'])) {
@@ -1742,10 +1746,22 @@ return;
 				$game['name'] = strip_tags($game['players']);
 
 				// calculate the current player based on how many moves are in the history table
-				// and how many players are in the game
-				$turn_idx = ($game['moves'] % count($players));
+				// and how many players are in the game, unless there is a winner
+				if ($game['winner']) {
+					$winners = $game['winner'];
+					array_trim($winners, 'int');
 
-				$game['turn'] = $players[$turn_idx]['username'];
+					$game['turn'] = array( );
+					foreach ($winners as $winner) {
+						$game['turn'][] = $keyed_players[$winner]['username'];
+					}
+
+					$game['turn'] = implode(', ', $game['turn']);
+				}
+				else {
+					$turn_idx = ($game['moves'] % count($players));
+					$game['turn'] = $players[$turn_idx]['username'];
+				}
 
 				if ($player_id === (int) $players[$turn_idx]['player_id']) {
 					$game['my_turn'] = 1;
