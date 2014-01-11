@@ -1765,10 +1765,10 @@ return;
 				else {
 					$turn_idx = ($game['moves'] % count($players));
 					$game['turn'] = $players[$turn_idx]['username'];
-				}
 
-				if ($player_id === (int) $players[$turn_idx]['player_id']) {
-					$game['my_turn'] = 1;
+					if ($player_id === (int) $players[$turn_idx]['player_id']) {
+						$game['my_turn'] = 1;
+					}
 				}
 
 				$game['state'] = 'Playing';
