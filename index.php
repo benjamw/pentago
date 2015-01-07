@@ -42,7 +42,6 @@ $table_format = array(
 	array('Game', 'game_id') ,
 	array('Turn', '###((\'draw\' == \'[[[turn]]]\') ? \'Draw- [[[winner]]]\' : \'[[[turn]]]\')') ,
 	array('Players', 'players') ,
-	array('Lg. Board', '###((\'[[[large_board]]]\') ? \'Yes\' : \'No\')') ,
 	array('Moves', 'moves') ,
 	array('Last Move', '###date(Settings::read(\'long_date\'), strtotime(\'[[[last_move]]]\'))', null, ' class="date"') ,
 );

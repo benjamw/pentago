@@ -109,7 +109,6 @@ CREATE TABLE IF NOT EXISTS `pa_match` (
   `match_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `password` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
   `capacity` tinyint(1) unsigned NOT NULL DEFAULT '2',
-  `large_board` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `paused` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `create_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`match_id`)

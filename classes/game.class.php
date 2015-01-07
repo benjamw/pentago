@@ -405,7 +405,7 @@ class Game
 		}
 
 		// create an entry in the history table
-		$board = str_repeat('.', (((2 < count($players)) || (bool) $match['large_board']) ? '81' : '36'));
+		$board = str_repeat('.', ((2 < count($players)) ? '81' : '36'));
 
 		$data = array( );
 		$data['game_id'] = $game_id;
@@ -1690,7 +1690,6 @@ return;
 
 		$query = "
 			SELECT G.*
-				, M.large_board
 				, G.winner IS NOT NULL AS finished
 				, 0 AS in_game
 				, 0 AS my_turn

@@ -79,7 +79,6 @@ $contents = <<< EOF
 
 		<input type="hidden" name="token" value="{$_SESSION['token']}" />
 		<input type="hidden" name="player_id" value="{$_SESSION['player_id']}" />
-		<input type="hidden" name="large_board" value="0" />
 
 		{$warning}
 
@@ -87,7 +86,7 @@ $contents = <<< EOF
 		<div><label for="opponent2">Opponent 2</label><select id="opponent2" name="opponent[]"><option value="C">-- Closed --</option>{$opponent_selection}</select></div>
 		<div><label for="opponent3">Opponent 3</label><select id="opponent3" name="opponent[]"><option value="C">-- Closed --</option>{$opponent_selection}</select></div>
 
-		<div><label>Use Large Board? <input type="checkbox" name="large_board" id="large_board" value="1" /></label></div>
+		<div>Board size is based off of number of players. 2 players use small board, 3 or more use large board.</div>
 
 		{$submit_button}
 
@@ -112,7 +111,6 @@ $table_format = array(
 	array('Invitor', 'invitor') ,
 	array('Other Opponents', 'opponents') ,
 	array('Capacity', 'capacity') ,
-	array('Large Board', '###(((bool) \'[[[large_board]]]\') ? \'Yes\' : \'No\')') ,
 	array('Date Sent', '###date(Settings::read(\'long_date\'), strtotime(\'[[[create_date]]]\'))', null, ' class="date"') ,
 	array('Action', '###(((bool) \'[[[accepted]]]\') ? \'\' : \'<input type="button" id="accept-[[[match_id]]]" value="Accept" />\').\'<input type="button" id="decline-[[[match_id]]]" value="Decline" />\'', false) ,
 	array('ID', 'match_id') ,
@@ -127,7 +125,6 @@ $table_meta = array(
 $table_format = array(
 	array('Other Opponents', 'opponents') ,
 	array('Capacity', 'capacity') ,
-	array('Large Board', '###(((bool) \'[[[large_board]]]\') ? \'Yes\' : \'No\')') ,
 	array('Date Sent', '###date(Settings::read(\'long_date\'), strtotime(\'[[[create_date]]]\'))', null, ' class="date"') ,
 	array('Action', '###\'<input type="button" id="withdraw-[[[match_id]]]" value="Withdraw" />\'.((strtotime(\'[[[create_date]]]\') >= strtotime(\'[[[resend_limit]]]\')) ? \'\' : \'<input type="button" id="resend-[[[match_id]]]" value="Resend" />\')', false) ,
 	array('ID', 'match_id') ,
@@ -143,7 +140,6 @@ $table_format = array(
 	array('Invitor', 'invitor') ,
 	array('Other Opponents', 'opponents') ,
 	array('Capacity', 'capacity') ,
-	array('Large Board', '###(((bool) \'[[[large_board]]]\') ? \'Yes\' : \'No\')') ,
 	array('Date Sent', '###date(Settings::read(\'long_date\'), strtotime(\'[[[create_date]]]\'))', null, ' class="date"') ,
 	array('Action', '<input type="button" id="accept-[[[match_id]]]" value="Accept" />', false) ,
 	array('ID', 'match_id') ,

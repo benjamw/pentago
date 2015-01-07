@@ -261,12 +261,6 @@ class Match
 		$_DATA['capacity'] = $capacity;
 		$_DATA['create_date '] = 'NOW( )'; // note the trailing space in the field name, this is not a typo
 
-		$_DATA['large_board'] = $_POST['large_board'];
-
-		if (2 < $capacity) {
-			$_DATA['large_board'] = 1;
-		}
-
 		if ( ! empty($_POST['password'])) {
 			$_DATA['password'] = $this->_hash_pass($_POST['password']);
 		}
@@ -978,7 +972,6 @@ class Match
 
 		$query = "
 			SELECT G.*
-				, M.large_board
 				, G.winner IS NOT NULL AS finished
 				, 0 AS in_game
 				, 0 AS my_turn
@@ -1476,7 +1469,6 @@ CREATE TABLE IF NOT EXISTS `match` (
   `match_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `password` varchar(255) COLLATE latin1_general_ci DEFAULT NULL,
   `capacity` tinyint(1) unsigned NOT NULL DEFAULT '2',
-  `large_board` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `paused` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `create_date` datetime NOT NULL,
   `modify_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,

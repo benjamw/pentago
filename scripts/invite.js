@@ -27,15 +27,6 @@ $(document).ready( function( ) {
 		$all.each( function( ) {
 			closed = closed && ('C' == $(this).val( ));
 		});
-
-		if (closed) {
-			// don't uncheck the box, it may have been manually checked
-			$('#large_board').prop('disabled', false);
-		}
-		else {
-			// check the box, and don't allow unchecking
-			$('#large_board').prop('checked', true).prop('disabled', true);
-		}
 	});
 
 	// make sure we don't have any duplicate names when we submit the form
