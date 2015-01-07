@@ -112,6 +112,10 @@ class Email
 		else { // $to is a single player id
 			$player_id = (int) $to;
 
+			if ( ! $player_id) {
+				return false;
+			}
+
 			// test if this user accepts emails
 			$query = "
 				SELECT P.email
