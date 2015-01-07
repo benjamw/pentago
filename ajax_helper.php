@@ -131,6 +131,22 @@ if (isset($_POST['invite'])) {
 			echo 'ERROR: Not your invite';
 		}
 	}
+	elseif ('start' == $_POST['invite']) {
+		// make sure we are the host of the invite
+		if (Match::is_host($_POST['match_id'], $_SESSION['player_id'])) {
+			$game_id = Match::force_start($_POST['match_id'], $_SESSION['player_id']);
+
+			if ($game_id) {
+				echo $game_id;
+			}
+			else {
+				echo 'ERROR: Could not create game';
+			}
+		}
+		else {
+			echo 'ERROR: Not your invite';
+		}
+	}
 	else {
 		// make sure we are one of the people in the invite
 		if (Match::has_invite($_POST['match_id'], $_SESSION['player_id'], $accept = true)) {

@@ -126,7 +126,7 @@ $table_format = array(
 	array('Other Opponents', 'opponents') ,
 	array('Capacity', 'capacity') ,
 	array('Date Sent', '###date(Settings::read(\'long_date\'), strtotime(\'[[[create_date]]]\'))', null, ' class="date"') ,
-	array('Action', '###\'<input type="button" id="withdraw-[[[match_id]]]" value="Withdraw" />\'.((strtotime(\'[[[create_date]]]\') >= strtotime(\'[[[resend_limit]]]\')) ? \'\' : \'<input type="button" id="resend-[[[match_id]]]" value="Resend" />\')', false) ,
+	array('Action', '###\'<input type="button" id="withdraw-[[[match_id]]]" value="Withdraw" />\'.((strtotime(\'[[[create_date]]]\') >= strtotime(\'[[[resend_limit]]]\')) ? \'\' : \'<input type="button" id="resend-[[[match_id]]]" value="Resend" />\').((2 > [[[contained]]]) ? \'\' : \'<input type="button" id="start-[[[match_id]]]" value="Start" />\')', false) ,
 	array('ID', 'match_id') ,
 );
 $contents .= get_table($table_format, $out_vites, $table_meta);

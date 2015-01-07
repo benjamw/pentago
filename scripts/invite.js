@@ -117,6 +117,38 @@ $(document).ready( function( ) {
 				}
 			});
 		}
+		else if ('start' == id[0]) { // start incomplete games
+			// delete the invite
+			if (debug) {
+				window.location = 'ajax_helper.php'+debug_query+'&'+'invite=start&match_id='+id[1];
+				return;
+			}
+
+			$.ajax({
+				type: 'POST',
+				url: 'ajax_helper.php',
+				data: 'invite=start&match_id='+id[1],
+				success: function(msg) {
+					msg = msg.toString( );
+
+					if ('-1' === msg) {
+						alert('You are not the game host.');
+						if (reload) { window.location.reload( ); }
+					}
+					else if ('ERROR' == msg.slice(0, 5)) {
+						alert(msg);
+						if (reload) { window.location.reload( ); }
+					}
+					else if (/^\d+$/.test(msg)) {
+						window.location = 'game.php?id='+msg+debug_query_;
+					}
+					else {
+						alert('UNKNOWN ERROR');
+						if (reload) { window.location.reload( ); }
+					}
+				}
+			});
+		}
 		else { // invites decline and outvites withdraw
 			// delete the invite
 			if (debug) {

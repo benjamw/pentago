@@ -562,6 +562,69 @@ class Match
 	}
 
 
+	/** static public function force_start
+	 *		Forces the game start if there are at least two players
+	 *		But only if the current player is the game host
+	 *
+	 * @param int match id
+	 * @param int current player id
+	 * @action creates a match
+	 * @return int match id
+	 */
+	static public function force_start($match_id, $player_id)
+	{
+		call(__METHOD__);
+
+		$match_id = (int) $match_id;
+		$player_id = (int) $player_id;
+
+		if ( ! self::is_host($match_id, $player_id)) {
+			return -1;
+		}
+
+		$Mysql = Mysql::get_instance( );
+
+		$query = "
+			SELECT M.*
+			FROM ".self::MATCH_TABLE." AS M
+			WHERE M.match_id = '{$match_id}'
+		";
+		$match = $Mysql->fetch_assoc($query);
+
+		// grab all the players invited to this match
+		$query = "
+			SELECT MP.*
+			FROM ".self::MATCH_PLAYER_TABLE." AS MP
+			WHERE MP.match_id = '{$match_id}'
+		";
+		$players = $Mysql->fetch_array($query);
+
+		foreach ($players as $key => $player) {
+			if (is_null($player['score'])) {
+				$Mysql->delete(self::MATCH_PLAYER_TABLE, array('match_id' => $match_id, 'player_id' => $player['player_id']));
+				--$match['capacity'];
+				unset($players[$key]);
+			}
+		}
+
+		// grab the ready player count
+		$query = "
+			SELECT MP.player_id
+			FROM ".self::MATCH_PLAYER_TABLE." AS MP
+			WHERE MP.match_id = '{$match_id}'
+				AND MP.player_id IS NOT NULL
+				AND score IS NOT NULL
+		";
+		$players = $Mysql->fetch_value_array($query);
+
+		// woohoo... start the match
+
+		$_this = new Match($match_id);
+
+		return $_this->next_game( );
+	}
+
+
 	/** static public function delete_invite
 	 *		Deletes the given invite
 	 *
@@ -677,6 +740,36 @@ class Match
 	}
 
 
+	/** static public function is_host
+	 *		Tests if the given player is the game host
+	 *
+	 * @param int game id
+	 * @param int player id
+	 * @return bool player is host
+	 */
+	static public function is_host($match_id, $player_id)
+	{
+		call(__METHOD__);
+
+		$match_id = (int) $match_id;
+		$player_id = (int) $player_id;
+
+		$Mysql = Mysql::get_instance( );
+
+		$query = "
+			SELECT COUNT(M.match_id)
+			FROM ".self::MATCH_TABLE." AS M
+				LEFT JOIN ".self::MATCH_PLAYER_TABLE." AS MP
+					USING (match_id)
+			WHERE M.match_id = '{$match_id}'
+				AND MP.host = '{$player_id}'
+		";
+		$is_host = (bool) $Mysql->fetch_value($query);
+
+		return $is_host;
+	}
+
+
 	/** public function get_current_game
 	 *		Returns the game object for the most recent game
 	 *
@@ -730,8 +823,8 @@ class Match
 			$this->paused = (bool) $result['paused'];
 
 			try {
-				$this->_pull_games($Game);
 				$this->_pull_players( );
+				$this->_pull_games($Game);
 			}
 			catch (MyException $e) {
 				throw $e;
@@ -813,11 +906,16 @@ class Match
 
 		if ($result) {
 			$names = array( );
+			$capacity = 0;
 			foreach ($result as $player) {
 				$player['object'] = new GamePlayer($player['player_id']);
 				$this->_players[$player['player_id']] = $player;
 				$names[] = $player['object']->username;
+
+				++$capacity;
 			}
+
+			$this->capacity = $capacity;
 
 			$this->name = implode(', ', $names);
 		}
