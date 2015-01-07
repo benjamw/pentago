@@ -262,7 +262,7 @@ class Match
 		$_DATA['create_date '] = 'NOW( )'; // note the trailing space in the field name, this is not a typo
 
 		if ( ! empty($_POST['password'])) {
-			$_DATA['password'] = $this->_hash_pass($_POST['password']);
+			$_DATA['password'] = self::_hash_pass($_POST['password']);
 		}
 		else {
 			$_DATA['password'] = null;
