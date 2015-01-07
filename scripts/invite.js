@@ -2,7 +2,7 @@
 var reload = true; // do not change this
 
 function check_fieldset_box( ) {
-	$('input.fieldset_box').each( function(i, elem) {
+	$('input.fieldset_box').each( function( ) {
 		var $this = $(this);
 		var id = $this.attr('id').slice(0,-4);
 
@@ -61,7 +61,7 @@ $(document).ready( function( ) {
 		return true;
 	});
 
-	// hide the collapsable fieldsets
+	// hide the collapsible fieldsets
 	$('input.fieldset_box').on('change', function( ) {
 		check_fieldset_box( );
 	});
@@ -100,8 +100,6 @@ $(document).ready( function( ) {
 						alert('UNKNOWN ERROR');
 						if (reload) { window.location.reload( ); }
 					}
-
-					return;
 				}
 			});
 		}
@@ -125,7 +123,6 @@ $(document).ready( function( ) {
 						// remove the resend button
 						$this.remove( );
 					}
-					return;
 				}
 			});
 		}
@@ -149,7 +146,6 @@ $(document).ready( function( ) {
 						// remove the parent TR
 						$this.parent( ).parent( ).remove( );
 					}
-					return;
 				}
 			});
 		}

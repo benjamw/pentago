@@ -1,3 +1,12 @@
+RECENT ERRORS
+after winning a match, I got the following errors:
+Notice: Undefined variable: turn_idx in /home/iohelixn/public_html/games/pentago/classes/match.class.php on line 1059
+
+Notice: Undefined index: in /home/iohelixn/public_html/games/pentago/classes/match.class.php on line 1059
+
+
+
+
 TODO
 ------------------
 

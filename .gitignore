@@ -1,7 +1,8 @@
-/.sass-cache
-/config
-/old_css
-/testpages
+.idea
+.sass-cache
+config
+old_css
+testpages
 
 *.epp
 *.err

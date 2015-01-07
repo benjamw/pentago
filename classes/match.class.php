@@ -187,7 +187,7 @@ class Match
 	public function __get($property)
 	{
 		if ( ! property_exists($this, $property)) {
-			throw new MyException(__METHOD__.': Trying to access non-existant property ('.$property.')', 2);
+			throw new MyException(__METHOD__.': Trying to access non-existent property ('.$property.')', 2);
 		}
 
 		if ('_' === $property[0]) {
@@ -211,7 +211,7 @@ class Match
 	public function __set($property, $value)
 	{
 		if ( ! property_exists($this, $property)) {
-			throw new MyException(__METHOD__.': Trying to access non-existant property ('.$property.')', 3);
+			throw new MyException(__METHOD__.': Trying to access non-existent property ('.$property.')', 3);
 		}
 
 		if ('_' === $property[0]) {
@@ -250,7 +250,7 @@ class Match
 			throw $e;
 		}
 
-		// get our capcity based on the number of players invited
+		// get our capacity based on the number of players invited
 		$capacity = 1;
 		foreach ($_POST['opponent'] as $opp) {
 			if ('C' !== (string) $opp) {

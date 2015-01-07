@@ -112,7 +112,7 @@ if (isset($_POST['invite'])) {
 			echo 'ERROR: Not your invite';
 		}
 	}
-	else if ('resend' == $_POST['invite']) {
+	elseif ('resend' == $_POST['invite']) {
 		// make sure we are one of the people in the invite
 		if (Match::has_invite($_POST['match_id'], $_SESSION['player_id'])) {
 			try {
@@ -147,6 +147,7 @@ if (isset($_POST['invite'])) {
 			echo 'ERROR: Not your invite';
 		}
 	}
+
 	exit;
 }
 

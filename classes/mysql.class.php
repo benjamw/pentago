@@ -112,29 +112,6 @@ class Mysql
 	}
 
 
-	/** public function __destruct
-	 *		Class destructor.
-	 *		Closes the mysql connection.
-	 *
-	 * @param void
-	 * @action close the mysql connection
-	 * @return void
-	 */
-/*
-	public function __destruct( )
-	{
-		$this->_log(__METHOD__.': '.$this->link_id);
-		$this->_log('===============================');
-
-		return; // just stop doing this
-
-		@mysql_close($this->link_id);
-		$this->link_id = null;
-		self::$_instance = null;
-	}
-*/
-
-
 	/** public function __get
 	 *		Class getter
 	 *		Returns the requested property if the
