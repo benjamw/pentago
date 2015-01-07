@@ -1247,37 +1247,11 @@ class Match
 
 		$in_vites = $out_vites = $open_vites = array( );
 		$match_id = 0;
+		$type = $new_item = false;
 		foreach ($list as $item) {
 			if ($item['match_id'] != $match_id) {
 				if ( ! empty($new_item)) {
-					$opp = array( );
-					$accepted = false;
-					foreach ($new_item['players'] as $p_id => $score) {
-						if ($p_id === (int) $new_item['invitor_id']) {
-							continue;
-						}
-
-						if (empty($p_id)) {
-							$opp[] = '-- Open --';
-							continue;
-						}
-
-						if (is_null($score)) {
-							$opp[] = $GLOBALS['_PLAYERS'][$p_id];
-						}
-						else {
-							$opp[] = '<span class="highlight">'.$GLOBALS['_PLAYERS'][$p_id].'</span>';
-
-							if ($p_id === $player_id) {
-								$accepted = true;
-							}
-						}
-					}
-
-					$new_item['opponents'] = implode(', ', $opp);
-					$new_item['accepted'] = $accepted;
-
-					${$type}[] = $new_item;
+					${$type}[] = self::process_invite($new_item, $player_id);
 					$new_item = array( );
 				}
 
@@ -1300,37 +1274,54 @@ class Match
 
 		// don't forget the last one
 		if ( ! empty($new_item)) {
-			$opp = array( );
-			$accepted = false;
-			foreach ($new_item['players'] as $p_id => $score) {
-				if ($p_id === (int) $new_item['invitor_id']) {
-					continue;
-				}
-
-				if (empty($p_id)) {
-					$opp[] = '-- Open --';
-					continue;
-				}
-
-				if (is_null($score)) {
-					$opp[] = $GLOBALS['_PLAYERS'][$p_id];
-				}
-				else {
-					$opp[] = '<span class="highlight">'.$GLOBALS['_PLAYERS'][$p_id].'</span>';
-
-					if ($p_id === $player_id) {
-						$accepted = true;
-					}
-				}
-			}
-
-			$new_item['opponents'] = implode(', ', $opp);
-			$new_item['accepted'] = $accepted;
-
-			${$type}[] = $new_item;
+			${$type}[] = self::process_invite($new_item, $player_id);
 		}
 
 		return array($in_vites, $out_vites, $open_vites);
+	}
+
+
+	/** static protected function process_invite
+	 *		Process the invite and add/massage the data
+	 *
+	 * @param array invite data
+	 * @param int current player id
+	 * @return array processed invite data
+	 */
+	static protected function process_invite($item, $player_id) {
+		$opp = array( );
+		$accepted = false;
+		$contained = 0;
+		foreach ($item['players'] as $p_id => $score) {
+			if ($p_id === (int) $item['invitor_id']) {
+				++$contained;
+				continue;
+			}
+
+			if (empty($p_id)) {
+				$opp[] = '-- Open --';
+				continue;
+			}
+
+			if (is_null($score)) {
+				$opp[] = $GLOBALS['_PLAYERS'][$p_id];
+			}
+			else {
+				++$contained;
+				$opp[] = '<span class="highlight">'.$GLOBALS['_PLAYERS'][$p_id].'</span>';
+
+				if ($p_id === $player_id) {
+					$accepted = true;
+				}
+			}
+		}
+
+		$item['capacity'] = (int) $item['capacity'];
+		$item['contained'] = $contained;
+		$item['opponents'] = implode(', ', $opp);
+		$item['accepted'] = $accepted;
+
+		return $item;
 	}
 
 
