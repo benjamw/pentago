@@ -55,9 +55,10 @@
 			top: 0;
 			left: 0;
 			z-index: 20;
-			width: 54px;
+			width: (114 / 2) * 1px;
 			height: 114px;
 			padding: 0;
+			margin: 0 !important;
 			background: transparent url(../images/rotate_cw.png) center center no-repeat;
 			opacity: 0;
 
@@ -70,7 +71,7 @@
 			}
 
 			&.rotate_left {
-				left: 54px;
+				left: (114 / 2) * 1px;
 				background-image: url(../images/rotate_ccw.png);
 			}
 
