@@ -521,6 +521,10 @@ class Mysql
 	 */
 	public function delete($table, $where)
 	{
+		if (is_array($where)) {
+			$where = ' WHERE '.$this->build_where($where);
+		}
+
 		$query = "
 			DELETE
 			FROM `{$table}`
@@ -535,6 +539,82 @@ class Mysql
 		catch (MySQLException $e) {
 			throw $e;
 		}
+	}
+
+	/** protected function build_where
+	 * 		Builds a where string from a condition array
+	 *
+	 * @param $where
+	 * @param string $join
+	 *
+	 * @return string
+	 */
+	protected function build_where($where, $join = 'AND') {
+		if (empty($where)) {
+			return ' 1 = 1 ';
+		}
+
+		$join = trim(strtoupper($join));
+		$clauses = array( );
+		foreach ($where as $clause => $value) {
+			if (is_numeric($clause) && is_array($value)) {
+				$clauses[] = '( '.$this->build_where($value).' )';
+			}
+			elseif (in_array(strtoupper(trim($clause)), array('AND', 'OR'))) {
+				$clauses[] = '( '.$this->build_where($value, strtoupper(trim($clause))).' )';
+			}
+			else {
+				if (is_null($value)) {
+					$value = 'NULL';
+				}
+				elseif (is_bool($value)) {
+					$value = $value ? 'TRUE' : 'FALSE';
+				}
+
+				if (false === strpos($clause, ' ')) {
+					if (is_array($value)) {
+						if (empty($value) && ('AND' === $join)) {
+							return ' 1 = 1 ';
+						}
+						elseif ( ! empty($value)) {
+							$clauses[] = $clause." IN ('".implode("','", $value)."')";
+						}
+					}
+					else {
+						if (is_numeric($clause)) {
+							$clauses[] = $value;
+						}
+						else {
+							if ( ! in_array($value, array('NULL', 'TRUE', 'FALSE')) && (0 !== strpos($value, ':')) && ('?' !== $value)) {
+								$value = mysql_real_escape_string($value);
+								$value = "'{$value}'";
+							}
+
+							$clauses[] = $clause.' = '.$value;
+						}
+					}
+				}
+				else {
+					if (is_array($value)) {
+						if (empty($value) && ('AND' === $join)) {
+							return ' 1 = 1 ';
+						}
+						elseif ( ! empty($value)) {
+							$clauses[] = $clause." ANY ('".implode("','", $value)."')";
+						}
+					}
+					else {
+						if ( ! in_array($value, array('NULL', 'TRUE', 'FALSE')) && (0 !== strpos($value, ':')) && ('?' !== $value)) {
+							$value = "'{$value}'";
+						}
+
+						$clauses[] = $clause.' '.$value;
+					}
+				}
+			}
+		}
+
+		return implode(' '.$join.' ', $clauses);
 	}
 
 
@@ -572,7 +652,7 @@ class Mysql
 
 		if ( ! is_array($where_array)) {
 			$recursive = false;
-			$where_array = (array) $where_array;
+			$where_array = array($where_array);
 		}
 
 		if ($recursive) {
