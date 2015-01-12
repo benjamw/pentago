@@ -397,7 +397,8 @@ console.log('REFRESH TIMER - '+ timeout);
 		// set the time of the click
 		time.push(new Date( ).getTime( ));
 
-		var $this = $(this),
+		var $block,
+			$this = $(this),
 			$move = $('#move');
 
 		if ('s_' === $this.attr('id').slice(0, 2)) {
@@ -429,9 +430,9 @@ console.log('REFRESH TIMER - '+ timeout);
 			$move.val($move.val( ) + $this.attr('id').slice(2));
 
 			// rotate the block
-			$('#blk_'+ $this.attr('id').slice(2, 3))
-				.css('z-index', 10)
-				.animateRotate((('R' === $this.attr('id').slice(3)) ? 90 : -90), 500, 'swing', function( ) {
+			$block = $('#blk_'+ $this.attr('id').slice(2, 3));
+			$block.css('z-index', 10)
+				.animateRotate((('R' === $this.attr('id').slice(3)) ? 90 : -90), 750, 'swing', function( ) {
 					$('#blk_'+ $this.attr('id').slice(2, 3)).replaceWith(
 						redraw_block($move.val( ).split(''))
 /*
@@ -444,6 +445,10 @@ console.log('REFRESH TIMER - '+ timeout);
 */
 					);
 				});
+
+			// rotate each of the divs inside the block the other direction to keep the highlights oriented correctly
+			$block.find('> div')
+				.animateRotate((('R' === $this.attr('id').slice(3)) ? -90 : 90), 750, 'swing');
 
 			if (debug) {
 				window.location = 'ajax_helper.php'+debug_query+'&'+$('form#game').serialize( )+'&turn=1';
