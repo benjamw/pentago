@@ -638,6 +638,11 @@ footer {
 	box-sizing: border-box;
 }
 
+@media (max-height: 600px) {
+	footer {
+		position: static;
+	}
+}
 
 .notice {
 	font-weight: bold;
