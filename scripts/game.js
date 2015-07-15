@@ -434,7 +434,7 @@ console.log('REFRESH TIMER - '+ timeout);
 			$block.css('z-index', 10)
 				.animateRotate((('R' === $this.attr('id').slice(3)) ? 90 : -90), 750, 'swing', function( ) {
 					$('#blk_'+ $this.attr('id').slice(2, 3)).replaceWith(
-						redraw_block($move.val( ).split(''))
+						redraw_block($move.val( ).split('')) // no closing ;, it's in a function call
 /*
 						$(redraw_block($move.val( ).split('')))
 							.css({
